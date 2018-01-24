@@ -9,13 +9,11 @@ cc_binary(
         "-DPACKAGE_DATADIR='\"data\"'",
         "-DPYTHON",
         "-DVIDEO",
-        "-I/usr/include/python3.5",
     ],
     linkopts = [
         "-lconfig",
         "-lncurses",
         "-lopenal",
-        "-lpython3.5m",
         "-lX11",
     ],
     deps = [
@@ -23,5 +21,6 @@ cc_binary(
         "@curl",
         "@libqrencode",
         "@libvpx",
+        "@python3//:python",
     ],
 )

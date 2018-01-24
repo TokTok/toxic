@@ -341,7 +341,8 @@ void audio_bit_rate_status_cb(ToxAV *av, uint32_t friend_number, uint32_t audio_
                               uint32_t video_bit_rate, void *user_data)
 {
     CallControl.audio_bit_rate = audio_bit_rate;
-    toxav_bit_rate_set(av, friend_number, audio_bit_rate, video_bit_rate, user_data);
+    toxav_audio_set_bit_rate(av, friend_number, audio_bit_rate, user_data);
+    toxav_video_set_bit_rate(av, friend_number, video_bit_rate, user_data);
 }
 
 void callback_recv_invite(Tox *m, uint32_t friend_number)
@@ -862,7 +863,7 @@ void cmd_bitrate(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)
                 error_str = "Syncronization error occured";
                 break;
 
-            case TOXAV_ERR_BIT_RATE_SET_INVALID_AUDIO_BIT_RATE:
+            case TOXAV_ERR_BIT_RATE_SET_INVALID_BIT_RATE:
                 error_str = "Invalid audio bit rate value (valid is 6-510)";
                 break;
 
