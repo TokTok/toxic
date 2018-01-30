@@ -1,11 +1,16 @@
-language: c
-compiler: clang
+language: python
+python: nightly
 
 addons:
   apt:
     packages:
+    - libalut-dev
     - libconfig-dev
+    - libnotify-dev
+    - libopenal-dev
+    - libopus-dev
     - libqrencode-dev
+    - libvpx-dev
 
 cache:
   directories:
@@ -20,7 +25,7 @@ install:
 - test -f $HOME/cache/usr/lib/libsodium.so || (cd libsodium && ./configure --prefix=$HOME/cache/usr && make install -j$(nproc))
 # c-toxcore
 - git clone --depth=1 https://github.com/TokTok/c-toxcore
-- test -f $HOME/cache/usr/lib/libtoxcore.so || (cd c-toxcore && cmake -B_build -H. -DCMAKE_INSTALL_PREFIX:PATH=$HOME/cache/usr -DBUILD_TOXAV=0 && make -C_build install -j$(nproc))
+- test -f $HOME/cache/usr/lib/libtoxcore.so || (cd c-toxcore && cmake -B_build -H. -DCMAKE_INSTALL_PREFIX:PATH=$HOME/cache/usr && make -C_build install -j$(nproc))
 
 script:
-- make
+- make ENABLE_PYTHON=1
