@@ -319,6 +319,10 @@ static void load_groups(ToxWindow *prompt, Tox *m)
     size_t num_chats = tox_conference_get_chatlist_size(m);
     uint32_t chatlist[num_chats];
 
+    if (num_chats) {
+        tox_conference_get_chatlist(m, chatlist);
+    }
+
     for (i = 0; i < num_chats; ++i) {
         uint32_t groupnum = chatlist[i];
 
@@ -763,8 +767,10 @@ static Tox *load_toxic(char *data_path)
 {
     TOX_ERR_OPTIONS_NEW options_new_err;
     struct Tox_Options *tox_opts = tox_options_new(&options_new_err);
+
     if (!tox_opts)
         exit_toxic_err("tox_options_new returned fatal error", options_new_err);
+
     init_tox_options(tox_opts);
 
     TOX_ERR_NEW new_err;
