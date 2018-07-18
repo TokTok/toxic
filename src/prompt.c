@@ -137,7 +137,7 @@ void kill_prompt_window(ToxWindow *self)
 }
 
 /* callback: Updates own connection status in prompt statusbar */
-void prompt_onSelfConnectionChange(Tox *m, TOX_CONNECTION connection_status, void *userdata)
+void on_self_connection_status(Tox *m, TOX_CONNECTION connection_status, void *userdata)
 {
     StatusBar *statusbar = prompt->stb;
     statusbar->connection = connection_status;
@@ -450,23 +450,25 @@ static void prompt_onConnectionChange(ToxWindow *self, Tox *m, uint32_t friendnu
         line_info_add(self, timefrmt, nick, NULL, CONNECTION, 0, GREEN, msg);
         write_to_log(msg, nick, ctx->log, true);
 
-        if (self->active_box != -1)
+        if (self->active_box != -1) {
             box_notify2(self, user_log_in, NT_WNDALERT_2 | NT_NOTIFWND | NT_RESTOL, self->active_box,
                         "%s has come online", nick);
-        else
+        } else {
             box_notify(self, user_log_in, NT_WNDALERT_2 | NT_NOTIFWND | NT_RESTOL, &self->active_box,
                        "Toxic", "%s has come online", nick);
+        }
     } else if (connection_status == TOX_CONNECTION_NONE) {
         msg = "has gone offline";
         line_info_add(self, timefrmt, nick, NULL, DISCONNECTION, 0, RED, msg);
         write_to_log(msg, nick, ctx->log, true);
 
-        if (self->active_box != -1)
+        if (self->active_box != -1) {
             box_notify2(self, user_log_out, NT_WNDALERT_2 | NT_NOTIFWND | NT_RESTOL, self->active_box,
                         "%s has gone offline", nick);
-        else
+        } else {
             box_notify(self, user_log_out, NT_WNDALERT_2 | NT_NOTIFWND | NT_RESTOL, &self->active_box,
                        "Toxic", "%s has gone offline", nick);
+        }
     }
 }
 
