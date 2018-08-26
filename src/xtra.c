@@ -20,6 +20,11 @@
  *
  */
 
+#ifndef _POSIX_C_SOURCE
+// For strtok_r.
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "xtra.h"
 
 #include <X11/Xlib.h>
@@ -243,7 +248,10 @@ void *event_loop(void *p)
 
         if (!pending) {
             XUnlockDisplay(Xtra.display);
-            usleep(10000);
+            struct timespec ten_seconds;
+            ten_seconds.tv_sec = 10;
+            ten_seconds.tv_nsec = 0;
+            nanosleep(&ten_seconds, NULL);
             continue;
         }
 

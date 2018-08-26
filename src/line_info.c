@@ -20,6 +20,15 @@
  *
  */
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
+#ifndef _DEFAULT_SOURCE
+// For strsep.
+#define _DEFAULT_SOURCE
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>

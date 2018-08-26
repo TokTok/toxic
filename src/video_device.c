@@ -20,6 +20,10 @@
  *
  */
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "video_device.h"
 #include "video_call.h"
 
@@ -257,7 +261,10 @@ VideoDeviceError terminate_video_devices()
     video_thread_running = false;
     unlock;
 
-    usleep(20000);
+    struct timespec twenty_seconds;
+    twenty_seconds.tv_sec = 20;
+    twenty_seconds.tv_nsec = 0;
+    nanosleep(&twenty_seconds, NULL);
 
     int i;
 
@@ -673,7 +680,11 @@ void *video_thread_poll(void *arg)  // TODO: maybe use thread for every input so
         unlock;
 
         if (video_thread_paused) {
-            usleep(10000);    /* Wait for unpause. */
+            struct timespec ten_seconds;
+            ten_seconds.tv_sec = 10;
+            ten_seconds.tv_nsec = 0;
+            /* Wait for unpause. */
+            nanosleep(&ten_seconds, NULL);
         } else {
             for (i = 0; i < size[vdt_input]; ++i) {
                 lock;
@@ -762,7 +773,10 @@ void *video_thread_poll(void *arg)  // TODO: maybe use thread for every input so
                 unlock;
             }
 
-            usleep(1000 * 1000 / 24);
+            struct timespec pause;
+            pause.tv_sec = 1000 / 24; // Why 41?
+            pause.tv_nsec = 0;
+            nanosleep(&pause, NULL);
         }
     }
 

@@ -20,6 +20,10 @@
  *
  */
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include <limits.h> /* PATH_MAX */
 #include <stdio.h>  /* fgets, popen, pclose */
 #include <stdlib.h> /* malloc, realloc, free, getenv */

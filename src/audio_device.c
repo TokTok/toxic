@@ -20,6 +20,10 @@
  *
  */
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "audio_device.h"
 
 #ifdef AUDIO
@@ -127,7 +131,10 @@ DeviceError terminate_devices()
     thread_running = false;
     unlock;
 
-    usleep(20000);
+    struct timespec twenty_seconds;
+    twenty_seconds.tv_sec = 20;
+    twenty_seconds.tv_nsec = 0;
+    nanosleep(&twenty_seconds, NULL);
 
     if (pthread_mutex_destroy(&mutex) != 0) {
         return (DeviceError) de_InternalError;
@@ -479,7 +486,10 @@ void *thread_poll(void *arg)  // TODO: maybe use thread for every input source
 
         /* Wait for unpause. */
         if (paused) {
-            usleep(10000);
+            struct timespec ten_seconds;
+            ten_seconds.tv_sec = 10;
+            ten_seconds.tv_nsec = 0;
+            nanosleep(&ten_seconds, NULL);
         }
 
         else {
@@ -514,7 +524,10 @@ void *thread_poll(void *arg)  // TODO: maybe use thread for every input source
                 unlock;
             }
 
-            usleep(5000);
+            struct timespec five_seconds;
+            five_seconds.tv_sec = 10;
+            five_seconds.tv_nsec = 0;
+            nanosleep(&five_seconds, NULL);
         }
     }
 

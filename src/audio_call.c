@@ -20,6 +20,15 @@
  *
  */
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
+#ifndef _DEFAULT_SOURCE
+// For strncasecmp.
+#define _DEFAULT_SOURCE
+#endif
+
 #include "toxic.h"
 #include "windows.h"
 #include "audio_call.h"

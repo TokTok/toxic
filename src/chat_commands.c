@@ -20,6 +20,11 @@
  *
  */
 
+#ifndef _DEFAULT_SOURCE
+// For strncasecmp.
+#define _DEFAULT_SOURCE
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 

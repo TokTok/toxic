@@ -20,6 +20,8 @@
  *
  */
 
+#define _DEFAULT_SOURCE  // For strcasecmp.
+
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>

@@ -20,6 +20,14 @@
  *
  */
 
+#ifndef _POSIX_C_SOURCE
+#define _POSIX_C_SOURCE 200809L
+#endif
+
+#ifndef _DEFAULT_SOURCE
+#define _DEFAULT_SOURCE
+#endif
+
 #include <curses.h>
 #include <errno.h>
 #include <stdio.h>
@@ -883,7 +891,10 @@ void *thread_cqueue(void *data)
 
         pthread_mutex_unlock(&Winthread.lock);
 
-        usleep(4000);
+        struct timespec pause;
+        pause.tv_sec = 4;
+        pause.tv_nsec = 0;
+        nanosleep(&pause, NULL);
     }
 }
 
@@ -897,7 +908,10 @@ void *thread_av(void *data)
         toxav_iterate(av);
         pthread_mutex_unlock(&Winthread.lock);
 
-        usleep(toxav_iteration_interval(av) * 1000);
+        struct timespec pause;
+        pause.tv_sec = 0;
+        pause.tv_nsec = toxav_iteration_interval(av) * 1000 * 1000;
+        nanosleep(&pause, NULL);
     }
 }
 #endif  /* AUDIO */
@@ -1377,7 +1391,10 @@ int main(int argc, char **argv)
             last_save = cur_time;
         }
 
-        usleep(tox_iteration_interval(m) * 1000);
+        struct timespec pause;
+        pause.tv_sec = 0;
+        pause.tv_nsec = tox_iteration_interval(m) * 1000 * 1000;
+        nanosleep(&pause, NULL);
     }
 
     return 0;

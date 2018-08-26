@@ -20,6 +20,11 @@
  *
  */
 
+#ifndef _DEFAULT_SOURCE
+// For strcasecmp.
+#define _DEFAULT_SOURCE
+#endif
+
 #include "toxic.h"
 #include "windows.h"
 #include "video_call.h"
