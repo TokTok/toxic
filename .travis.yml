@@ -31,7 +31,7 @@ install:
   - git clone --depth=1 https://github.com/TokTok/c-toxcore ../c-toxcore
   - test -f $HOME/cache/usr/lib/libtoxcore.so || (cd ../c-toxcore && cmake -B_build -H. -DCMAKE_INSTALL_PREFIX:PATH=$HOME/cache/usr && make -C_build install -j$(nproc))
   # astyle
-  - wget -O ../astyle.tar.gz https://deb.debian.org/debian/pool/main/a/astyle/astyle_2.06.orig.tar.gz
+  - wget -O ../astyle.tar.gz https://deb.debian.org/debian/pool/main/a/astyle/astyle_3.1.orig.tar.gz
   - test -f $HOME/cache/astyle/build/gcc/bin/astyle || (tar -xf ../astyle.tar.gz -C "$HOME/cache" && make -C "$HOME/cache/astyle/build/gcc" -j2)
 
 script:
