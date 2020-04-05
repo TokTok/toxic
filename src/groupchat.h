@@ -34,7 +34,7 @@ typedef struct GroupPeer {
     bool       active;
 
     uint8_t    pubkey[TOX_PUBLIC_KEY_SIZE];
-    uint32_t   peernumber;
+    uint32_t   peernum;    /* index in chat->peer_list */
 
     char       name[TOX_MAX_NAME_LENGTH];
     size_t     name_length;
@@ -46,7 +46,7 @@ typedef struct GroupPeer {
 
 typedef struct AudioInputCallbackData {
     Tox *tox;
-    uint32_t groupnumber;
+    uint32_t groupnum;
 } AudioInputCallbackData;
 
 #define PUBKEY_STRING_SIZE (2 * TOX_PUBLIC_KEY_SIZE + 1)
@@ -90,17 +90,19 @@ void redraw_groupchat_win(ToxWindow *self);
  * If `prefix` is exactly the pubkey of a peer, matches only that peer.
  * return number of entries placed in `entries`.
  */
-uint32_t get_name_list_entries_by_prefix(uint32_t groupnumber, const char *prefix, NameListEntry **entries,
+uint32_t get_name_list_entries_by_prefix(uint32_t groupnum, const char *prefix, NameListEntry **entries,
         uint32_t maxpeers);
 
-bool init_group_audio_input(Tox *tox, uint32_t groupnumber);
-bool enable_group_audio(Tox *tox, uint32_t groupnumber);
-bool disable_group_audio(Tox *tox, uint32_t groupnumber);
-void audio_group_callback(void *tox, uint32_t groupnumber, uint32_t peernumber,
+bool init_group_audio_input(Tox *tox, uint32_t groupnum);
+bool enable_group_audio(Tox *tox, uint32_t groupnum);
+bool disable_group_audio(Tox *tox, uint32_t groupnum);
+void audio_group_callback(void *tox, uint32_t groupnum, uint32_t peernum,
                           const int16_t *pcm, unsigned int samples, uint8_t channels, uint32_t
                           sample_rate, void *userdata);
 
-bool group_mute_self(uint32_t groupnumber);
-bool group_mute_peer(const Tox *m, uint32_t groupnumber, uint32_t peernum);
+bool group_mute_self(uint32_t groupnum);
+bool group_mute_peer(const Tox *m, uint32_t groupnum, uint32_t peernum);
+bool group_set_VAD_threshold(uint32_t groupnum, float threshold);
+float group_get_VAD_threshold(uint32_t groupnum);
 
 #endif /* GROUPCHAT_H */

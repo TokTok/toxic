@@ -103,7 +103,7 @@ static struct cmd_func group_commands[] = {
 #ifdef AUDIO
     { "/audio",     cmd_enable_audio },
     { "/mute",      cmd_group_mute   },
-    { "/sense",     cmd_sense        },
+    { "/sense",     cmd_group_sense  },
 #endif /* AUDIO */
     { NULL,         NULL            },
 };
