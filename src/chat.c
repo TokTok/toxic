@@ -101,10 +101,17 @@ static const char *chat_cmd_list[] = {
     "/sdev",
     "/mute",
     "/sense",
-    "/video",
     "/bitrate",
 
 #endif /* AUDIO */
+
+#ifdef VIDEO
+
+    "/res",
+    "/vcall",
+    "/video",
+
+#endif /* VIDEO */
 
 #ifdef PYTHON
 
@@ -131,9 +138,6 @@ void kill_chat_window(ToxWindow *self, Tox *m)
     StatusBar *statusbar = self->stb;
 
 #ifdef AUDIO
-#ifdef VIDEO
-    stop_video_stream(self);
-#endif /* VIDEO */
     stop_current_call(self);
 #endif /* AUDIO */
 
@@ -740,12 +744,12 @@ static void chat_onConferenceInvite(ToxWindow *self, Tox *m, int32_t friendnumbe
     char name[TOX_MAX_NAME_LENGTH];
     get_nick_truncate(m, name, friendnumber);
 
-    const char *description = type == TOX_CONFERENCE_TYPE_AV ? "an audio conference" : "a conference";
+    const char *description = type == TOX_CONFERENCE_TYPE_AV ? "audio conference" : "conference";
 
     if (self->active_box != -1) {
-        box_silent_notify2(self, NT_WNDALERT_2 | NT_NOFOCUS, self->active_box, "invites you to join %s", description);
+        box_silent_notify2(self, NT_WNDALERT_2 | NT_NOFOCUS, self->active_box, "invites you to join %s %s", description, name);
     } else {
-        box_silent_notify(self, NT_WNDALERT_2 | NT_NOFOCUS, &self->active_box, name, "invites you to join %s", description);
+        box_silent_notify(self, NT_WNDALERT_2 | NT_NOFOCUS, &self->active_box, name, "invites you to join %s %s", description, name);
     }
 
     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "%s has invited you to %s.", name, description);
