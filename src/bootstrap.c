@@ -20,21 +20,21 @@
  *
  */
 
+#include <limits.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <limits.h>
 
 #include <curl/curl.h>
 #include <tox/tox.h>
 
-#include "line_info.h"
-#include "windows.h"
-#include "misc_tools.h"
 #include "configdir.h"
 #include "curl_util.h"
-#include "settings.h"
+#include "line_info.h"
+#include "misc_tools.h"
 #include "prompt.h"
+#include "settings.h"
+#include "windows.h"
 
 extern struct arg_opts arg_opts;
 extern struct user_settings *user_settings;

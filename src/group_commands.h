@@ -23,8 +23,8 @@
 #ifndef GROUP_COMMANDS_H
 #define GROUP_COMMANDS_H
 
-#include "windows.h"
 #include "toxic.h"
+#include "windows.h"
 
 void cmd_set_title(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE]);
 void cmd_enable_audio(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE]);
