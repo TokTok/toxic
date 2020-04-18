@@ -20,22 +20,22 @@
  *
  */
 
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
-#include <time.h>
-#include <limits.h>
-#include <dirent.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
 #include <arpa/inet.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <limits.h>
+#include <netinet/in.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/socket.h>
 #include <sys/stat.h>
+#include <time.h>
 
-#include "toxic.h"
-#include "windows.h"
+#include "file_transfers.h"
 #include "misc_tools.h"
 #include "settings.h"
-#include "file_transfers.h"
+#include "toxic.h"
+#include "windows.h"
 
 extern ToxWindow *prompt;
 extern struct user_settings *user_settings;
