@@ -64,6 +64,7 @@
 #include "term_mplex.h"
 #include "name_lookup.h"
 #include "bootstrap.h"
+#include "groupchat.h"
 
 #ifdef X11
 #include "xtra.h"
@@ -354,12 +355,24 @@ static void load_friendlist(Tox *m)
     sort_friendlist_index();
 }
 
+static void load_groups(Tox *m)
+{
+    size_t i;
+    size_t numgroups = tox_group_get_number_groups(m);
+
+    for (i = 0; i < numgroups; ++i) {
+        if (init_groupchat_win(m, i, NULL, 0) != 0) {
+            tox_group_leave(m, i, NULL, 0, NULL);
+        }
+    }
+}
+
 static void load_conferences(Tox *m)
 {
     size_t num_chats = tox_conference_get_chatlist_size(m);
 
     if (num_chats == 0) {
-        return;
+        return;        
     }
 
     uint32_t *chatlist = malloc(num_chats * sizeof(uint32_t));
@@ -684,6 +697,21 @@ static void init_tox_callbacks(Tox *m)
     tox_callback_file_chunk_request(m, on_file_chunk_request);
     tox_callback_file_recv_control(m, on_file_recv_control);
     tox_callback_file_recv_chunk(m, on_file_recv_chunk);
+
+    tox_callback_group_invite(m, on_group_invite, NULL);
+    tox_callback_group_message(m, on_group_message, NULL);
+    tox_callback_group_private_message(m, on_group_private_message, NULL);
+    tox_callback_group_peer_join(m, on_group_peer_join, NULL);
+    tox_callback_group_peer_exit(m, on_group_peer_exit, NULL);
+    tox_callback_group_peer_name(m, on_group_nick_change, NULL);
+    tox_callback_group_peer_status(m, on_group_status_change, NULL);
+    tox_callback_group_topic(m, on_group_topic_change, NULL);
+    tox_callback_group_peer_limit(m, on_group_peer_limit, NULL);
+    tox_callback_group_privacy_state(m, on_group_privacy_state, NULL);
+    tox_callback_group_password(m, on_group_password, NULL);
+    tox_callback_group_self_join(m, on_group_self_join, NULL);
+    tox_callback_group_join_fail(m, on_group_rejected, NULL);
+    tox_callback_group_moderation(m, on_group_moderation, NULL);
 }
 
 static void init_tox_options(struct Tox_Options *tox_opts)
@@ -1423,6 +1451,7 @@ int main(int argc, char **argv)
 
     prompt = init_windows(m);
     prompt_init_statusbar(prompt, m, !datafile_exists);
+    load_groups(m);
     load_conferences(m);
 
     /* thread for ncurses stuff */

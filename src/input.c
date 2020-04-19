@@ -33,6 +33,7 @@
 #include "line_info.h"
 #include "notify.h"
 #include "conference.h"
+#include "groupchats.h"
 #include "settings.h"
 
 extern struct user_settings *user_settings;
@@ -337,6 +338,9 @@ bool input_handle(ToxWindow *self, wint_t key, int x, int mx_x)
             if (self->is_conference) {
                 self->show_peerlist ^= 1;
                 redraw_conference_win(self);
+            } else if (self->is_group) {
+                self->show_peerlist ^= 1;
+                redraw_groupchat_win(self);
             }
 
             match = true;
@@ -348,3 +352,4 @@ bool input_handle(ToxWindow *self, wint_t key, int x, int mx_x)
 
     return match;
 }
+

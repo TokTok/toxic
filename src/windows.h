@@ -137,6 +137,22 @@ struct ToxWindow {
     void(*onTypingChange)(ToxWindow *, Tox *, uint32_t, bool);
     void(*onReadReceipt)(ToxWindow *, Tox *, uint32_t, uint32_t);
 
+
+    void(*onGroupInvite)(ToxWindow *, Tox *, uint32_t, const char *, size_t, const char *, size_t);
+    void(*onGroupMessage)(ToxWindow *, Tox *, uint32_t, uint32_t, TOX_MESSAGE_TYPE, const char *, size_t);
+    void(*onGroupPrivateMessage)(ToxWindow *, Tox *, uint32_t, uint32_t, const char *, size_t);
+    void(*onGroupPeerJoin)(ToxWindow *, Tox *, uint32_t, uint32_t);
+    void(*onGroupPeerExit)(ToxWindow *, Tox *, uint32_t, uint32_t, TOX_GROUP_EXIT_TYPE, const char*, size_t, const char *, size_t);
+    void(*onGroupNickChange)(ToxWindow *, Tox *, uint32_t, uint32_t, const char *, size_t);
+    void(*onGroupStatusChange)(ToxWindow *, Tox *, uint32_t, uint32_t, TOX_USER_STATUS);
+    void(*onGroupTopicChange)(ToxWindow *, Tox *, uint32_t, uint32_t, const char *, size_t);
+    void(*onGroupPeerLimit)(ToxWindow *, Tox *, uint32_t, uint32_t);
+    void(*onGroupPrivacyState)(ToxWindow *, Tox *, uint32_t, TOX_GROUP_PRIVACY_STATE);
+    void(*onGroupPassword)(ToxWindow *, Tox *, uint32_t, const char *, size_t);
+    void(*onGroupSelfJoin)(ToxWindow *, Tox *, uint32_t);
+    void(*onGroupRejected)(ToxWindow *, Tox *, uint32_t, TOX_GROUP_JOIN_FAIL);
+    void(*onGroupModeration)(ToxWindow *, Tox *, uint32_t, uint32_t, uint32_t, TOX_GROUP_MOD_EVENT);
+
 #ifdef AUDIO
 
     void(*onInvite)(ToxWindow *, ToxAV *, uint32_t, int);
@@ -173,6 +189,8 @@ struct ToxWindow {
     bool is_prompt;
     bool is_friendlist;
     bool is_conference;
+    bool is_group;
+
     int show_peerlist;    /* used to toggle conference peerlist */
 
     WINDOW_ALERTS alert;
@@ -271,3 +289,4 @@ ToxWindow *get_active_window(void);
 void refresh_inactive_windows(void);
 
 #endif /* WINDOWS_H */
+

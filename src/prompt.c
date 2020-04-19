@@ -59,8 +59,10 @@ static const char *glob_cmd_list[] = {
     "/connect",
     "/decline",
     "/exit",
+    "/group",
     "/conference",
     "/help",
+    "/join",
     "/log",
     "/myid",
 #ifdef QRCODE
@@ -629,3 +631,4 @@ ToxWindow *new_prompt(void)
 
     return ret;
 }
+

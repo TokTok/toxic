@@ -80,8 +80,10 @@ static const char *conference_cmd_list[] = {
     "/connect",
     "/decline",
     "/exit",
+    "/group",
     "/conference",
     "/help",
+    "/join",
     "/log",
     "/myid",
 #ifdef QRCODE
@@ -762,3 +764,4 @@ static ToxWindow *new_conference_chat(uint32_t conferencenum)
 
     return ret;
 }
+

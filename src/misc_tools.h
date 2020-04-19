@@ -77,6 +77,9 @@ time_t get_unix_time(void);
 /* Puts the current time in buf in the format of [HH:mm:ss] (not thread safe) */
 void get_time_str(char *buf, int bufsize);
 
+/* Converts seconds to string in format H hours, m minutes, s seconds */
+void get_elapsed_time_str_alt(char *buf, int bufsize, uint64_t secs);
+
 /* Converts seconds to string in format HH:mm:ss; truncates hours and minutes when necessary */
 void get_elapsed_time_str(char *buf, int bufsize, time_t secs);
 
@@ -148,6 +151,12 @@ size_t get_nick_truncate(Tox *m, char *buf, uint32_t friendnum);
 /* same as get_nick_truncate but for conferences */
 int get_conference_nick_truncate(Tox *m, char *buf, uint32_t peernum, uint32_t conferencenum);
 
+/* same as get_nick_truncate but for groupchats */
+size_t get_group_nick_truncate(Tox *m, char *buf, uint32_t peer_id, uint32_t groupnum);
+
+/* same as get_group_nick_truncate() but for self. */
+size_t get_group_self_nick_truncate(Tox *m, char *buf, uint32_t groupnum);
+
 /* copies data to msg buffer.
    returns length of msg, which will be no larger than size-1 */
 size_t copy_tox_str(char *msg, size_t size, const char *data, size_t length);
@@ -195,3 +204,4 @@ void free_ptr_array(void **arr);
 void **malloc_ptr_array(size_t length, size_t bytes);
 
 #endif /* MISC_TOOLS_H */
+

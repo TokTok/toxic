@@ -30,6 +30,7 @@
 #include "chat_commands.h"
 #include "global_commands.h"
 #include "conference_commands.h"
+#include "groupchat_commands.h"
 #include "line_info.h"
 #include "misc_tools.h"
 #include "notify.h"
@@ -45,11 +46,13 @@ static struct cmd_func global_commands[] = {
     { "/add",       cmd_add           },
     { "/avatar",    cmd_avatar        },
     { "/clear",     cmd_clear         },
+    { "/conference", cmd_conference    },
     { "/connect",   cmd_connect       },
     { "/decline",   cmd_decline       },
     { "/exit",      cmd_quit          },
-    { "/conference", cmd_conference    },
+    { "/group",     cmd_groupchat     },
     { "/help",      cmd_prompt_help   },
+    { "/join",      cmd_join          },
     { "/log",       cmd_log           },
     { "/myid",      cmd_myid          },
 #ifdef QRCODE
@@ -78,8 +81,9 @@ static struct cmd_func global_commands[] = {
 
 static struct cmd_func chat_commands[] = {
     { "/cancel",    cmd_cancelfile        },
-    { "/invite",    cmd_conference_invite },
-    { "/join",      cmd_conference_join   },
+    { "/cinvite",   cmd_conference_invite },
+    { "/cjoin",     cmd_conference_join   },
+    { "/gaccept",   cmd_group_accept      },
     { "/savefile",  cmd_savefile          },
     { "/sendfile",  cmd_sendfile          },
 #ifdef AUDIO
@@ -98,7 +102,7 @@ static struct cmd_func chat_commands[] = {
 };
 
 static struct cmd_func conference_commands[] = {
-    { "/title",     cmd_conference_set_title },
+    { "/title",     cmd_conference_set_title   },
 
 #ifdef AUDIO
     { "/mute",      cmd_mute        },
@@ -107,18 +111,53 @@ static struct cmd_func conference_commands[] = {
     { NULL,         NULL            },
 };
 
+static struct cmd_func groupchat_commands[] = {
+    { "/chatid",    cmd_chatid         },
+    { "/disconnect",cmd_disconnect     },
+    { "/ignore",    cmd_ignore         },
+    { "/kick",      cmd_kick           },
+    { "/mod",       cmd_mod            },
+    { "/mykey",     cmd_mykey          },
+    { "/passwd",    cmd_set_passwd     },
+    { "/peerlimit", cmd_set_peerlimit  },
+    { "/privacy",   cmd_set_privacy    },
+    { "/rejoin",    cmd_rejoin         },
+    { "/silence",   cmd_silence        },
+    { "/topic",     cmd_set_topic      },
+    { "/unignore",  cmd_unignore       },
+    { "/unmod",     cmd_unmod          },
+    { "/unsilence", cmd_unsilence      },
+    { "/whois",     cmd_whois          },
+#ifdef AUDIO
+    { "/mute",      cmd_mute           },
+    { "/sense",     cmd_sense          },
+#endif /* AUDIO */
+    { NULL,         NULL               },
+};
 
 #ifdef PYTHON
-#define SPECIAL_COMMANDS 6
+#define SPECIAL_COMMANDS 18
 #else
-#define SPECIAL_COMMANDS 5
+#define SPECIAL_COMMANDS 17
 #endif /* PYTHON */
 
 /* Special commands are commands that only take one argument even if it contains spaces */
 static const char special_commands[SPECIAL_COMMANDS][MAX_CMDNAME_SIZE] = {
     "/avatar",
+    "/gaccept",
+    "/group",
+    "/ignore",
+    "/kick",
+    "/mod",
     "/nick",
     "/note",
+    "/passwd",
+    "/silence",
+    "/topic",
+    "/unignore",
+    "/unmod",
+    "/unsilence",
+    "/whois",
 #ifdef PYTHON
     "/run",
 #endif /* PYTHON */
@@ -239,19 +278,29 @@ void execute(WINDOW *w, ToxWindow *self, Tox *m, const char *input, int mode)
      * Note: Global commands must come last in case of duplicate command names
      */
     switch (mode) {
-        case CHAT_COMMAND_MODE:
+        case CHAT_COMMAND_MODE: {
             if (do_command(w, self, m, num_args, chat_commands, args) == 0) {
                 return;
             }
 
             break;
+        }
 
-        case CONFERENCE_COMMAND_MODE:
+        case CONFERENCE_COMMAND_MODE: {
             if (do_command(w, self, m, num_args, conference_commands, args) == 0) {
                 return;
             }
 
             break;
+        }
+
+        case GROUPCHAT_COMMAND_MODE: {
+            if (do_command(w, self, m, num_args, groupchat_commands, args) == 0) {
+                return;
+            }
+
+            break;
+        }
     }
 
     if (do_command(w, self, m, num_args, global_commands, args) == 0) {
@@ -268,3 +317,4 @@ void execute(WINDOW *w, ToxWindow *self, Tox *m, const char *input, int mode)
 
     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Invalid command.");
 }
+

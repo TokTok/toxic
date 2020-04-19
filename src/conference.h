@@ -26,7 +26,10 @@
 #include "toxic.h"
 #include "windows.h"
 
+#ifndef SIDEWAR_WIDTH
 #define SIDEBAR_WIDTH 16
+#endif
+
 #define SDBAR_OFST 2    /* Offset for the peer number box at the top of the statusbar */
 #define MAX_CONFERENCE_NUM (MAX_WINDOWS_NUM - 2)
 #define CONFERENCE_EVENT_WAIT 3
@@ -61,3 +64,4 @@ int init_conference_win(Tox *m, uint32_t conferencenum, uint8_t type, const char
 void redraw_conference_win(ToxWindow *self);
 
 #endif /* CONFERENCE_H */
+

@@ -68,6 +68,9 @@ ui = {
   // Indicator for normal messages.
   line_normal="---";
 
+  // Indicator for special messages.
+  line_normal=">>>";
+
   // true to change status based on screen/tmux attach/detach, false to disable
   mplex_away=true;
 
