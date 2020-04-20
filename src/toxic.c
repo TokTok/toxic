@@ -173,7 +173,7 @@ void free_global_data(void)
 
 void exit_toxic_success(Tox *m)
 {
-    store_data(m, DATA_FILE);
+    store_data(m, DATA_FILE); // must come first
     memset(&user_password, 0, sizeof(struct user_password));
 
     terminate_notify();
