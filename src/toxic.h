@@ -140,8 +140,8 @@ void on_group_message(Tox *m, uint32_t groupnumber, uint32_t peernumber, TOX_MES
 void on_group_private_message(Tox *m, uint32_t groupnumber, uint32_t peernumber, const uint8_t *message, size_t length,
                               void *userdata);
 void on_group_peer_join(Tox *m, uint32_t groupnumber, uint32_t peernumber, void *userdata);
-void on_group_peer_exit(Tox *m, uint32_t groupnumber, uint32_t peernumber, const uint8_t *partmsg, size_t length,
-                        void *userdata);
+void on_group_peer_exit(Tox *m, uint32_t groupnumber, uint32_t peernumber, const uint8_t *nick, size_t nick_len,
+                        const uint8_t *partmsg, size_t length, void *userdata);
 void on_group_topic_change(Tox *m, uint32_t groupnumber, uint32_t peernumber, const uint8_t *topic, size_t length,
                            void *userdata);
 void on_group_peer_limit(Tox *m, uint32_t groupnumber, uint32_t peer_limit, void *userdata);
