@@ -123,7 +123,7 @@ static void ui_defaults(struct user_settings *settings)
     settings->show_typing_other = SHOW_TYPING_ON;
     settings->show_welcome_msg = SHOW_WELCOME_MSG_ON;
     settings->show_connection_msg = SHOW_CONNECTION_MSG_ON;
-    settings->nodeslist_update_freq = 7;
+    settings->nodeslist_update_freq = 0;
     settings->autosave_freq = 600;
 
     snprintf(settings->line_join, LINE_HINT_MAX + 1, "%s", LINE_JOIN);
