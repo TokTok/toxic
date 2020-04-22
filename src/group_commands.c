@@ -71,10 +71,20 @@ void cmd_ignore(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[
     }
 
     TOX_ERR_GROUP_TOGGLE_IGNORE err;
+    tox_group_toggle_ignore(m, self->num, peer_id, true, &err);
 
-    if (!tox_group_toggle_ignore(m, self->num, peer_id, true, &err)) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to ignore %s (error %d).", nick, err);
-        return;
+    switch (err) {
+        case TOX_ERR_GROUP_TOGGLE_IGNORE_OK: {
+            break;
+        }
+        case TOX_ERR_GROUP_TOGGLE_IGNORE_SELF: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You cannot ignore yourself.");
+            return;
+        }
+        default: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to toggle ignore on %s (error %d).", nick, err);
+            return;
+        }
     }
 
     char timefrmt[TIME_STR_SIZE];
@@ -109,13 +119,18 @@ static void cmd_kickban_helper(ToxWindow *self, Tox *m, const char *nick, bool s
     switch (err) {
         case TOX_ERR_GROUP_MOD_REMOVE_PEER_OK: {
             const char *msg = set_ban ? "Banned" : "Kicked";
-            groupchat_onGroupPeerExit(self, m, self->num, target_peer_id, nick, strlen(nick), msg, strlen(msg));
             groupchat_onGroupModeration(self, m, self->num, self_peer_id, target_peer_id, type);
+            groupchat_onGroupPeerExit(self, m, self->num, target_peer_id, nick, strlen(nick), msg, strlen(msg));
             return;
         }
 
         case TOX_ERR_GROUP_MOD_REMOVE_PEER_PERMISSIONS: {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "You do not have permission to %s %s.", type_str, nick);
+            return;
+        }
+
+        case TOX_ERR_GROUP_MOD_REMOVE_PEER_SELF: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "You cannot kick/ban yourself.");
             return;
         }
 
@@ -282,7 +297,12 @@ void cmd_mod(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX
         }
 
         case TOX_ERR_GROUP_MOD_SET_ROLE_ASSIGNMENT: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "This peer is already a moderator.");
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "%s is already a moderator.", nick);
+            return;
+        }
+
+        case TOX_ERR_GROUP_MOD_SET_ROLE_SELF: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You cannot make yourself a moderator.");
             return;
         }
 
@@ -317,7 +337,7 @@ void cmd_unmod(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[M
     }
 
     if (tox_group_peer_get_role(m, self->num, target_peer_id, NULL) != TOX_GROUP_ROLE_MODERATOR) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "%s is not a moderator", nick);
+        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "%s is not a moderator.", nick);
         return;
     }
 
@@ -331,7 +351,12 @@ void cmd_unmod(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[M
         }
 
         case TOX_ERR_GROUP_MOD_SET_ROLE_PERMISSIONS: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Nice try.");
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "You do not have permission to unmod %s.", nick);
+            return;
+        }
+
+        case TOX_ERR_GROUP_MOD_SET_ROLE_SELF: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You cannot remove your own moderator status.");
             return;
         }
 
@@ -540,6 +565,16 @@ void cmd_silence(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)
             return;
         }
 
+        case TOX_ERR_GROUP_MOD_SET_ROLE_ASSIGNMENT: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "%s is already silenced.", nick);
+            return;
+        }
+
+        case TOX_ERR_GROUP_MOD_SET_ROLE_SELF: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You cannot silence yourself.");
+            return;
+        }
+
         default: {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to silence %s (error %d).", nick, err);
             return;
@@ -586,6 +621,16 @@ void cmd_unsilence(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*arg
 
         case TOX_ERR_GROUP_MOD_SET_ROLE_PERMISSIONS: {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You do not have permission to unsilence %s.", nick);
+            return;
+        }
+
+        case TOX_ERR_GROUP_MOD_SET_ROLE_ASSIGNMENT: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "%s is not silenced.", nick);
+            return;
+        }
+
+        case TOX_ERR_GROUP_MOD_SET_ROLE_SELF: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You cannot unsilence yourself.");
             return;
         }
 
@@ -700,10 +745,20 @@ void cmd_unignore(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv
     }
 
     TOX_ERR_GROUP_TOGGLE_IGNORE err;
+    tox_group_toggle_ignore(m, self->num, peer_id, false, &err);
 
-    if (!tox_group_toggle_ignore(m, self->num, peer_id, false, &err)) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to unignore %s (error %d).", nick, err);
-        return;
+    switch (err) {
+        case TOX_ERR_GROUP_TOGGLE_IGNORE_OK: {
+            break;
+        }
+        case TOX_ERR_GROUP_TOGGLE_IGNORE_SELF: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You cannot unignore yourself.");
+            return;
+        }
+        default: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to toggle ignore on %s (error %d).", nick, err);
+            return;
+        }
     }
 
     char timefrmt[TIME_STR_SIZE];
