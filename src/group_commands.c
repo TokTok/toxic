@@ -93,8 +93,15 @@ void cmd_ignore(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[
     line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, BLUE, "-!- Ignoring %s", nick);
 }
 
-static void cmd_kickban_helper(ToxWindow *self, Tox *m, const char *nick, bool set_ban)
+void cmd_kick(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE])
 {
+    if (argc < 1) {
+        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Peer name must be specified.");
+        return;
+    }
+
+    const char *nick = argv[1];
+
     uint32_t target_peer_id;
 
     if (group_get_nick_peer_id(self->num, nick, &target_peer_id) == -1) {
@@ -110,150 +117,29 @@ static void cmd_kickban_helper(ToxWindow *self, Tox *m, const char *nick, bool s
         return;
     }
 
-    const char *type_str = set_ban ? "ban" : "kick";
-    TOX_GROUP_MOD_EVENT type = set_ban ? TOX_GROUP_MOD_EVENT_BAN : TOX_GROUP_MOD_EVENT_KICK;
-
-    TOX_ERR_GROUP_MOD_REMOVE_PEER err;
-    tox_group_mod_remove_peer(m, self->num, target_peer_id, set_ban, &err);
+    TOX_ERR_GROUP_MOD_KICK_PEER err;
+    tox_group_mod_kick_peer(m, self->num, target_peer_id, &err);
 
     switch (err) {
-        case TOX_ERR_GROUP_MOD_REMOVE_PEER_OK: {
-            const char *msg = set_ban ? "Banned" : "Kicked";
-            groupchat_onGroupModeration(self, m, self->num, self_peer_id, target_peer_id, type);
-            groupchat_onGroupPeerExit(self, m, self->num, target_peer_id, nick, strlen(nick), msg, strlen(msg));
+        case TOX_ERR_GROUP_MOD_KICK_PEER_OK: {
+            groupchat_onGroupModeration(self, m, self->num, self_peer_id, target_peer_id, TOX_GROUP_MOD_EVENT_KICK);
+            groupchat_onGroupPeerExit(self, m, self->num, target_peer_id, nick, strlen(nick), "Quit", strlen("Quit"));
             return;
         }
 
-        case TOX_ERR_GROUP_MOD_REMOVE_PEER_PERMISSIONS: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "You do not have permission to %s %s.", type_str, nick);
+        case TOX_ERR_GROUP_MOD_KICK_PEER_PERMISSIONS: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "You do not have permission to kick %s.", nick);
             return;
         }
 
-        case TOX_ERR_GROUP_MOD_REMOVE_PEER_SELF: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "You cannot kick/ban yourself.");
+        case TOX_ERR_GROUP_MOD_KICK_PEER_SELF: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "You cannot kick yourself.");
             return;
         }
 
         default: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Failed to %s %s from the group (error %d).", type_str, nick,
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Failed to kick %s from the group (error %d).", nick,
                           err);
-            return;
-        }
-    }
-}
-
-void cmd_kick(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE])
-{
-    if (argc < 1) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Peer name must be specified.");
-        return;
-    }
-
-    cmd_kickban_helper(self, m, argv[1], false);
-}
-
-void cmd_ban(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE])
-{
-    TOX_ERR_GROUP_BAN_QUERY err;
-
-    if (argc < 1) {
-        size_t num_banned = tox_group_ban_get_list_size(m, self->num, &err);
-
-        if (err != TOX_ERR_GROUP_BAN_QUERY_OK) {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to get the ban list size (error %d).", err);
-            return;
-        }
-
-        if (num_banned == 0) {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Ban list is empty.");
-            return;
-        }
-
-        uint32_t ban_list[num_banned];
-
-        if (!tox_group_ban_get_list(m, self->num, ban_list, &err)) {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to get the ban list (error %d).", err);
-            return;
-        }
-
-        uint16_t i;
-
-        for (i = 0; i < num_banned; ++i) {
-            uint32_t id = ban_list[i];
-            size_t len = tox_group_ban_get_name_size(m, self->num, id, &err);
-
-            if (err != TOX_ERR_GROUP_BAN_QUERY_OK) {
-                line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve name length for ban %d (error %d).", id, err);
-                continue;
-            }
-
-            char tmp_nick[len];
-
-            if (!tox_group_ban_get_name(m, self->num, id, (uint8_t *) tmp_nick, &err)) {
-                line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve name for ban %d (error %d).", id, err);
-                continue;
-            }
-
-            char nick[len + 1];
-            copy_tox_str(nick, sizeof(nick), tmp_nick, len);
-
-            uint64_t time_set = tox_group_ban_get_time_set(m, self->num, id, &err);
-
-            if (err != TOX_ERR_GROUP_BAN_QUERY_OK) {
-                line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve timestamp for ban %d (error %d).", id, err);
-                continue;
-            }
-
-            struct tm tm_set = *localtime((const time_t *) &time_set);
-
-            char time_str[64];
-
-            strftime(time_str, sizeof(time_str), "%e %b %Y %H:%M:%S%p", &tm_set);
-
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "ID %d : %s [Set:%s]", id, nick, time_str);
-        }
-
-        return;
-    }
-
-    cmd_kickban_helper(self, m, argv[1], true);
-}
-
-void cmd_unban(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE])
-{
-    if (argc < 1) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Ban ID must be specified.");
-        return;
-    }
-
-    int ban_id = atoi(argv[1]);
-
-    if (ban_id == 0 && strcmp(argv[1], "0")) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Ban ID must be a non-negative interger.");
-        return;
-    }
-
-    TOX_ERR_GROUP_MOD_REMOVE_BAN err;
-    tox_group_mod_remove_ban(m, self->num, ban_id, &err);
-
-    switch (err) {
-        case TOX_ERR_GROUP_MOD_REMOVE_BAN_OK: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Ban list entry with id %d has been removed.", ban_id);
-            return;
-        }
-
-        case TOX_ERR_GROUP_MOD_REMOVE_BAN_PERMISSIONS: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You do not have permission to unban peers.");
-            return;
-        }
-
-        case TOX_ERR_GROUP_MOD_REMOVE_BAN_FAIL_ACTION: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Ban ID does not exist.");
-            return;
-        }
-
-        default: {
-            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to remove ban list entry (error %d).", err);
             return;
         }
     }

@@ -84,14 +84,13 @@ extern struct Winthread Winthread;
 #define AC_NUM_GROUP_COMMANDS_AUDIO 0
 #endif /* AUDIO */
 
-#define AC_NUM_GROUP_COMMANDS (38 + AC_NUM_GROUP_COMMANDS_PYTHON + AC_NUM_GROUP_COMMANDS_QRCODE + AC_NUM_GROUP_COMMANDS_AUDIO)
+#define AC_NUM_GROUP_COMMANDS (36 + AC_NUM_GROUP_COMMANDS_PYTHON + AC_NUM_GROUP_COMMANDS_QRCODE + AC_NUM_GROUP_COMMANDS_AUDIO)
 
 /* groupchat command names used for tab completion. */
 static const char group_cmd_list[AC_NUM_GROUP_COMMANDS][MAX_CMDNAME_SIZE] = {
     { "/accept"     },
     { "/add"        },
     { "/avatar"     },
-    { "/ban"        },
     { "/chatid"     },
     { "/clear"      },
     { "/close"      },
@@ -125,7 +124,6 @@ static const char group_cmd_list[AC_NUM_GROUP_COMMANDS][MAX_CMDNAME_SIZE] = {
     { "/silence"    },
     { "/status"     },
     { "/topic"      },
-    { "/unban"      },
     { "/unignore"   },
     { "/unmod"      },
     { "/unsilence"  },
@@ -991,10 +989,6 @@ void groupchat_onGroupModeration(ToxWindow *self, Tox *m, uint32_t groupnum, uin
     switch (type) {
         case TOX_GROUP_MOD_EVENT_KICK:
             line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, RED, "-!- %s has been kicked by %s", tgt_name, src_name);
-            break;
-
-        case TOX_GROUP_MOD_EVENT_BAN:
-            line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, RED, "-!- %s has been banned by %s", tgt_name, src_name);
             break;
 
         case TOX_GROUP_MOD_EVENT_OBSERVER:
