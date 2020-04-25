@@ -537,6 +537,8 @@ void cmd_rejoin(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[
     }
 
     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Reconnecting to group...");
+
+    groupchat_rejoin(self, m);
 }
 
 void cmd_set_topic(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE])

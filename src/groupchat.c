@@ -149,6 +149,29 @@ static void groupchat_onGroupNickChange(ToxWindow *self, Tox *m, uint32_t groupn
 static void groupchat_onGroupStatusChange(ToxWindow *self, Tox *m, uint32_t groupnum, uint32_t peer_id,
                                           TOX_USER_STATUS status);
 
+void groupchat_rejoin(ToxWindow *self, Tox *m)
+{
+    TOX_ERR_GROUP_SELF_QUERY s_err;
+    uint32_t self_peer_id = tox_group_self_get_peer_id(m, self->num, &s_err);
+
+    if (s_err != TOX_ERR_GROUP_SELF_QUERY_OK) {
+        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Failed to fetch self peer_id in groupchat_rejoin()");
+        return;
+    }
+
+    GroupChat *chat = &groupchats[self->num];
+
+    for (size_t i = 0; i < chat->max_idx; ++i) {
+        memset(&chat->peer_list[i], 0, sizeof(struct GroupPeer));
+    }
+
+    chat->num_peers = 0;
+    chat->max_idx = 0;
+    realloc_peer_list(self->num, 0);
+
+    groupchat_onGroupPeerJoin(self, m, self->num, self_peer_id);
+}
+
 static void kill_groupchat_window(ToxWindow *self)
 {
     ChatContext *ctx = self->chatwin;

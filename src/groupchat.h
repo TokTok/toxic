@@ -65,6 +65,8 @@ void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnum, uint3
 void groupchat_onGroupModeration(ToxWindow *self, Tox *m, uint32_t groupnum, uint32_t src_peer_id,
                                  uint32_t tgt_peer_id, TOX_GROUP_MOD_EVENT type);
 
+void groupchat_rejoin(ToxWindow *self, Tox *m);
+
 /* destroys and re-creates groupchat window */
 void redraw_groupchat_win(ToxWindow *self);
 
