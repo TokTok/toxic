@@ -149,6 +149,45 @@ static void groupchat_onGroupNickChange(ToxWindow *self, Tox *m, uint32_t groupn
 static void groupchat_onGroupStatusChange(ToxWindow *self, Tox *m, uint32_t groupnum, uint32_t peer_id,
                                           TOX_USER_STATUS status);
 
+/* Returns true if a group with groupnumber exists in the groupchats array */
+static bool groupnumber_valid(uint32_t groupnumber)
+{
+    size_t i;
+
+    for (i = 0; i < max_groupchat_index; ++i) {
+        if (groupchats[i].active && groupchats[i].groupnumber == groupnumber) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*
+ * Updates the group topic.
+ *
+ * Return 0 on success.
+ * Return -1 on failure.
+ */
+static int groupchat_update_topic(uint32_t groupnum, const char *topic, size_t length)
+{
+    if (length > TOX_GROUP_MAX_TOPIC_LENGTH) {
+        return -1;
+    }
+
+    if (!groupnumber_valid(groupnum)) {
+        return -1;
+    }
+
+    GroupChat *chat = &groupchats[groupnum];
+
+    chat->topic_length = length;
+    memcpy(chat->topic, topic, length);
+    chat->topic[length] = 0;
+
+    return -1;
+}
+
 void groupchat_rejoin(ToxWindow *self, Tox *m)
 {
     TOX_ERR_GROUP_SELF_QUERY s_err;
@@ -220,20 +259,6 @@ void exit_groupchat(ToxWindow *self, Tox *m, uint32_t groupnum, const char *part
 
     tox_group_leave(m, groupnum, (uint8_t *) partmessage, length, NULL);
     close_groupchat(self, m, groupnum);
-}
-
-/* Returns true if a group with groupnumber exists in the groupchats array */
-static bool groupnumber_valid(uint32_t groupnumber)
-{
-    size_t i;
-
-    for (i = 0; i < max_groupchat_index; ++i) {
-        if (groupchats[i].active && groupchats[i].groupnumber == groupnumber) {
-            return true;
-        }
-    }
-
-    return false;
 }
 
 /* Creates a new toxic groupchat window associated with groupnumber.
@@ -663,15 +688,19 @@ static void groupchat_onGroupTopicChange(ToxWindow *self, Tox *m, uint32_t group
 
     groupchat_update_last_seen(groupnum, peer_id);
 
+    char tmp_topic[TOX_GROUP_MAX_TOPIC_LENGTH + 1];
+    length = copy_tox_str(tmp_topic, sizeof(tmp_topic), topic, length);
+    groupchat_update_topic(groupnum, tmp_topic, length);
+
     char timefrmt[TIME_STR_SIZE];
     get_time_str(timefrmt, sizeof(timefrmt));
 
     char nick[TOX_MAX_NAME_LENGTH];
     get_group_nick_truncate(m, nick, peer_id, groupnum);
-    line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, MAGENTA, "-!- %s set the topic to: %s", nick, topic);
+    line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, MAGENTA, "-!- %s set the topic to: %s", nick, tmp_topic);
 
     char tmp_event[MAX_STR_SIZE];
-    snprintf(tmp_event, sizeof(tmp_event), " set the topic to %s", topic);
+    snprintf(tmp_event, sizeof(tmp_event), " set the topic to %s", tmp_topic);
     write_to_log(tmp_event, nick, ctx->log, true);
 }
 
@@ -916,34 +945,53 @@ static void groupchat_onGroupSelfJoin(ToxWindow *self, Tox *m, uint32_t groupnum
 
     groupchat_set_group_name(self, m, groupnum);
 
+    GroupChat *chat = NULL;
+
     int i;
 
     for (i = 0; i < max_groupchat_index; ++i) {
         if (groupchats[i].active && groupchats[i].groupnumber == groupnum) {
-            groupchats[i].time_connected = get_unix_time();
+            chat = &groupchats[i];
+            chat->time_connected = get_unix_time();
             break;
         }
     }
 
-    // TOX_ERR_GROUP_STATE_QUERIES err;
-    // size_t len = tox_group_get_topic_size(m, groupnum, &err);
+    if (chat == NULL) {
+        return;
+    }
 
-    // if (err != TOX_ERR_GROUP_STATE_QUERIES_OK) {
-    //     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group topic length (error %d)", err);
-    //     return;
-    // }
+    char tmp_topic[TOX_GROUP_MAX_TOPIC_LENGTH + 1];
 
-    // char tmp_topic[len];
-    // char timefrmt[TIME_STR_SIZE];
-    // get_time_str(timefrmt, sizeof(timefrmt));
+    TOX_ERR_GROUP_STATE_QUERIES err;
+    size_t topic_length = tox_group_get_topic_size(m, groupnum, &err);
 
-    // if (tox_group_get_topic(m, groupnum, (uint8_t *) tmp_topic, &err)) {
-    //     char topic[len + 1];
-    //     copy_tox_str(topic, sizeof(topic), tmp_topic, len);
-    //     line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, MAGENTA, "-!- Topic set to: %s", topic);
-    // } else {
-    //     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group topic (error %d)", err);
-    // }
+    if (err != TOX_ERR_GROUP_STATE_QUERIES_OK) {
+        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group topic length (error %d)", err);
+        return;
+    }
+
+    tox_group_get_topic(m, groupnum, (uint8_t *) tmp_topic, &err);
+    tmp_topic[topic_length] = 0;
+
+    if (err != TOX_ERR_GROUP_STATE_QUERIES_OK) {
+        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group topic (error %d)", err);
+        return;
+    }
+
+    char topic[TOX_GROUP_MAX_TOPIC_LENGTH + 1];
+    topic_length = copy_tox_str(topic, sizeof(topic), tmp_topic, topic_length);
+
+    if (chat->topic_length == topic_length && strcmp(chat->topic, topic) == 0) {
+        return;
+    }
+
+    groupchat_update_topic(groupnum, topic, topic_length);
+
+    char timefrmt[TIME_STR_SIZE];
+    get_time_str(timefrmt, sizeof(timefrmt));
+
+    line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, MAGENTA, "-!- Topic set to: %s", topic);
 }
 
 static void groupchat_onGroupRejected(ToxWindow *self, Tox *m, uint32_t groupnum, TOX_GROUP_JOIN_FAIL type)
