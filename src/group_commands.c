@@ -124,8 +124,18 @@ void cmd_kick(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MA
 
     switch (err) {
         case TOX_ERR_GROUP_MOD_KICK_PEER_OK: {
-            groupchat_onGroupModeration(self, m, self->num, self_peer_id, target_peer_id, TOX_GROUP_MOD_EVENT_KICK);
+            char self_name[TOX_MAX_NAME_LENGTH + 1];
+
+            if (get_group_nick_truncate(m, self_name, self_peer_id, self->num) == -1) {
+                strcpy(self_name, "Unknown");
+            }
+
+            char timefrmt[TIME_STR_SIZE];
+            get_time_str(timefrmt, sizeof(timefrmt));
+            line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, RED, "-!- %s has been kicked by %s", nick, self_name);
+
             groupchat_onGroupPeerExit(self, m, self->num, target_peer_id, nick, strlen(nick), "Quit", strlen("Quit"));
+
             return;
         }
 

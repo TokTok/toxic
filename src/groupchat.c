@@ -1035,8 +1035,8 @@ void groupchat_onGroupModeration(ToxWindow *self, Tox *m, uint32_t groupnum, uin
 
     GroupChat *chat = &groupchats[groupnum];
 
-    char src_name[TOX_MAX_NAME_LENGTH];
-    char tgt_name[TOX_MAX_NAME_LENGTH];
+    char src_name[TOX_MAX_NAME_LENGTH + 1];
+    char tgt_name[TOX_MAX_NAME_LENGTH + 1];
 
     if (get_group_nick_truncate(m, src_name, src_peer_id, groupnum) == -1) {
         return;
