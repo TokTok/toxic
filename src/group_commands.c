@@ -77,10 +77,12 @@ void cmd_ignore(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[
         case TOX_ERR_GROUP_TOGGLE_IGNORE_OK: {
             break;
         }
+
         case TOX_ERR_GROUP_TOGGLE_IGNORE_SELF: {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You cannot ignore yourself.");
             return;
         }
+
         default: {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to toggle ignore on %s (error %d).", nick, err);
             return;
@@ -639,10 +641,12 @@ void cmd_unignore(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv
         case TOX_ERR_GROUP_TOGGLE_IGNORE_OK: {
             break;
         }
+
         case TOX_ERR_GROUP_TOGGLE_IGNORE_SELF: {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "You cannot unignore yourself.");
             return;
         }
+
         default: {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to toggle ignore on %s (error %d).", nick, err);
             return;

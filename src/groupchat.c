@@ -925,25 +925,25 @@ static void groupchat_onGroupSelfJoin(ToxWindow *self, Tox *m, uint32_t groupnum
         }
     }
 
-    TOX_ERR_GROUP_STATE_QUERIES err;
-    size_t len = tox_group_get_topic_size(m, groupnum, &err);
+    // TOX_ERR_GROUP_STATE_QUERIES err;
+    // size_t len = tox_group_get_topic_size(m, groupnum, &err);
 
-    if (err != TOX_ERR_GROUP_STATE_QUERIES_OK) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group topic length (error %d)", err);
-        return;
-    }
+    // if (err != TOX_ERR_GROUP_STATE_QUERIES_OK) {
+    //     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group topic length (error %d)", err);
+    //     return;
+    // }
 
-    char tmp_topic[len];
-    char timefrmt[TIME_STR_SIZE];
-    get_time_str(timefrmt, sizeof(timefrmt));
+    // char tmp_topic[len];
+    // char timefrmt[TIME_STR_SIZE];
+    // get_time_str(timefrmt, sizeof(timefrmt));
 
-    if (tox_group_get_topic(m, groupnum, (uint8_t *) tmp_topic, &err)) {
-        char topic[len + 1];
-        copy_tox_str(topic, sizeof(topic), tmp_topic, len);
-        line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, MAGENTA, "-!- Topic set to: %s", topic);
-    } else {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group topic (error %d)", err);
-    }
+    // if (tox_group_get_topic(m, groupnum, (uint8_t *) tmp_topic, &err)) {
+    //     char topic[len + 1];
+    //     copy_tox_str(topic, sizeof(topic), tmp_topic, len);
+    //     line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, MAGENTA, "-!- Topic set to: %s", topic);
+    // } else {
+    //     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group topic (error %d)", err);
+    // }
 }
 
 static void groupchat_onGroupRejected(ToxWindow *self, Tox *m, uint32_t groupnum, TOX_GROUP_JOIN_FAIL type)
@@ -1188,7 +1188,7 @@ static void send_group_prvt_message(ToxWindow *self, Tox *m, uint32_t groupnum, 
 
     TOX_ERR_GROUP_SEND_PRIVATE_MESSAGE err;
 
-    if (!tox_group_send_private_message(m, groupnum, peer_id, (uint8_t *) msg, msg_len, &err)) {
+    if (!tox_group_send_private_message(m, groupnum, peer_id, TOX_MESSAGE_TYPE_NORMAL, (uint8_t *) msg, msg_len, &err)) {
         if (err == TOX_ERR_GROUP_SEND_PRIVATE_MESSAGE_PERMISSIONS) {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, RED, " * You are silenced.");
         } else {

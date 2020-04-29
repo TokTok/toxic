@@ -1488,3 +1488,4 @@ ToxWindow *new_chat(Tox *m, uint32_t friendnum)
 
     return ret;
 }
+

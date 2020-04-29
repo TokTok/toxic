@@ -698,20 +698,20 @@ static void init_tox_callbacks(Tox *m)
     tox_callback_file_recv_control(m, on_file_recv_control);
     tox_callback_file_recv_chunk(m, on_file_recv_chunk);
 
-    tox_callback_group_invite(m, on_group_invite, NULL);
-    tox_callback_group_message(m, on_group_message, NULL);
-    tox_callback_group_private_message(m, on_group_private_message, NULL);
-    tox_callback_group_peer_join(m, on_group_peer_join, NULL);
-    tox_callback_group_peer_exit(m, on_group_peer_exit, NULL);
-    tox_callback_group_peer_name(m, on_group_nick_change, NULL);
-    tox_callback_group_peer_status(m, on_group_status_change, NULL);
-    tox_callback_group_topic(m, on_group_topic_change, NULL);
-    tox_callback_group_peer_limit(m, on_group_peer_limit, NULL);
-    tox_callback_group_privacy_state(m, on_group_privacy_state, NULL);
-    tox_callback_group_password(m, on_group_password, NULL);
-    tox_callback_group_self_join(m, on_group_self_join, NULL);
-    tox_callback_group_join_fail(m, on_group_rejected, NULL);
-    tox_callback_group_moderation(m, on_group_moderation, NULL);
+    tox_callback_group_invite(m, on_group_invite);
+    tox_callback_group_message(m, on_group_message);
+    tox_callback_group_private_message(m, on_group_private_message);
+    tox_callback_group_peer_join(m, on_group_peer_join);
+    tox_callback_group_peer_exit(m, on_group_peer_exit);
+    tox_callback_group_peer_name(m, on_group_nick_change);
+    tox_callback_group_peer_status(m, on_group_status_change);
+    tox_callback_group_topic(m, on_group_topic_change);
+    tox_callback_group_peer_limit(m, on_group_peer_limit);
+    tox_callback_group_privacy_state(m, on_group_privacy_state);
+    tox_callback_group_password(m, on_group_password);
+    tox_callback_group_self_join(m, on_group_self_join);
+    tox_callback_group_join_fail(m, on_group_rejected);
+    tox_callback_group_moderation(m, on_group_moderation);
 }
 
 static void init_tox_options(struct Tox_Options *tox_opts)
