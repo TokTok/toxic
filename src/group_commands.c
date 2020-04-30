@@ -111,28 +111,17 @@ void cmd_kick(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MA
         return;
     }
 
-    TOX_ERR_GROUP_SELF_QUERY s_err;
-    uint32_t self_peer_id = tox_group_self_get_peer_id(m, self->num, &s_err);
-
-    if (s_err != TOX_ERR_GROUP_SELF_QUERY_OK) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Failed to fetch self peer_id.");
-        return;
-    }
-
     TOX_ERR_GROUP_MOD_KICK_PEER err;
     tox_group_mod_kick_peer(m, self->num, target_peer_id, &err);
 
     switch (err) {
         case TOX_ERR_GROUP_MOD_KICK_PEER_OK: {
-            char self_name[TOX_MAX_NAME_LENGTH + 1];
-
-            if (get_group_nick_truncate(m, self_name, self_peer_id, self->num) == -1) {
-                strcpy(self_name, "Unknown");
-            }
+            char self_nick[TOX_MAX_NAME_LENGTH + 1];
+            get_group_self_nick_truncate(m, self_nick, self->num);
 
             char timefrmt[TIME_STR_SIZE];
             get_time_str(timefrmt, sizeof(timefrmt));
-            line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, RED, "-!- %s has been kicked by %s", nick, self_name);
+            line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, RED, "-!- %s has been kicked by %s", nick, self_nick);
 
             groupchat_onGroupPeerExit(self, m, self->num, target_peer_id, nick, strlen(nick), "Quit", strlen("Quit"));
 
@@ -565,14 +554,14 @@ void cmd_set_topic(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*arg
         }
 
         if (tlen > 0) {
-            char cur_topic[tlen];
+            char cur_topic[TOX_GROUP_MAX_TOPIC_LENGTH + 1];
 
             if (!tox_group_get_topic(m, self->num, (uint8_t *) cur_topic, &err)) {
                 line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve topic (error %d).", err);
                 return;
             }
 
-            cur_topic[tlen] = '\0';
+            cur_topic[tlen] = 0;
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Topic is set to: %s", cur_topic);
         } else {
             line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Topic is not set.");
@@ -611,22 +600,14 @@ void cmd_set_topic(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*arg
     char timefrmt[TIME_STR_SIZE];
     get_time_str(timefrmt, sizeof(timefrmt));
 
-    TOX_ERR_GROUP_SELF_QUERY sn_err;
-    size_t sn_len = tox_group_self_get_name_size(m, self->num, &sn_err);
-    char selfnick[sn_len];
-
-    if (!tox_group_self_get_name(m, self->num, (uint8_t *) selfnick, &sn_err)) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve your own name (error %d).", sn_err);
-        return;
-    }
-
-    selfnick[sn_len] = '\0';
+    char self_nick[TOX_MAX_NAME_LENGTH + 1];
+    get_group_self_nick_truncate(m, self_nick, self->num);
 
     line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, MAGENTA, "-!- You set the topic to: %s", topic);
 
     char tmp_event[MAX_STR_SIZE];
     snprintf(tmp_event, sizeof(tmp_event), "set topic to %s", topic);
-    write_to_log(tmp_event, selfnick, self->chatwin->log, true);
+    write_to_log(tmp_event, self_nick, self->chatwin->log, true);
 }
 
 void cmd_unignore(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE])

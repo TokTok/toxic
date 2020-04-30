@@ -571,16 +571,13 @@ static void group_onAction(ToxWindow *self, Tox *m, uint32_t groupnum, uint32_t 
 {
     ChatContext *ctx = self->chatwin;
 
-    char nick[TOX_MAX_NAME_LENGTH];
+    char nick[TOX_MAX_NAME_LENGTH + 1];
     get_group_nick_truncate(m, nick, peer_id, groupnum);
 
-    char selfnick[TOX_MAX_NAME_LENGTH];
-    tox_self_get_name(m, (uint8_t *) selfnick);
+    char self_nick[TOX_MAX_NAME_LENGTH + 1];
+    get_group_self_nick_truncate(m, self_nick, groupnum);
 
-    size_t n_len = tox_self_get_name_size(m);
-    selfnick[n_len] = '\0';
-
-    if (strcasestr(action, selfnick)) {
+    if (strcasestr(action, self_nick)) {
         sound_notify(self, generic_message, NT_WNDALERT_0, NULL);
 
         if (self->active_box != -1) {
@@ -615,19 +612,16 @@ static void groupchat_onGroupMessage(ToxWindow *self, Tox *m, uint32_t groupnum,
 
     ChatContext *ctx = self->chatwin;
 
-    char nick[TOX_MAX_NAME_LENGTH];
+    char nick[TOX_MAX_NAME_LENGTH + 1];
     get_group_nick_truncate(m, nick, peer_id, groupnum);
 
-    char selfnick[TOX_MAX_NAME_LENGTH];
-    tox_self_get_name(m, (uint8_t *) selfnick);
-
-    size_t sn_len = tox_self_get_name_size(m);
-    selfnick[sn_len] = '\0';
+    char self_nick[TOX_MAX_NAME_LENGTH + 1];
+    get_group_self_nick_truncate(m, self_nick, groupnum);
 
     int nick_clr = CYAN;
 
     /* Only play sound if mentioned by someone else */
-    if (strcasestr(msg, selfnick) && strcmp(selfnick, nick)) {
+    if (strcasestr(msg, self_nick) && strcmp(self_nick, nick)) {
         sound_notify(self, generic_message, NT_WNDALERT_0 | user_settings->bell_on_message, NULL);
 
         if (self->active_box != -1) {
@@ -659,7 +653,7 @@ static void groupchat_onGroupPrivateMessage(ToxWindow *self, Tox *m, uint32_t gr
 
     ChatContext *ctx = self->chatwin;
 
-    char nick[TOX_MAX_NAME_LENGTH];
+    char nick[TOX_MAX_NAME_LENGTH + 1];
     get_group_nick_truncate(m, nick, peer_id, groupnum);
 
     char timefrmt[TIME_STR_SIZE];
@@ -695,7 +689,7 @@ static void groupchat_onGroupTopicChange(ToxWindow *self, Tox *m, uint32_t group
     char timefrmt[TIME_STR_SIZE];
     get_time_str(timefrmt, sizeof(timefrmt));
 
-    char nick[TOX_MAX_NAME_LENGTH];
+    char nick[TOX_MAX_NAME_LENGTH + 1];
     get_group_nick_truncate(m, nick, peer_id, groupnum);
     line_info_add(self, timefrmt, NULL, NULL, SYS_MSG, 1, MAGENTA, "-!- %s set the topic to: %s", nick, tmp_topic);
 
@@ -922,14 +916,14 @@ static void groupchat_set_group_name(ToxWindow *self, Tox *m, uint32_t groupnum)
         return;
     }
 
-    char tmp_groupname[len];
+    char tmp_groupname[TOX_GROUP_MAX_GROUP_NAME_LENGTH + 1];
 
     if (!tox_group_get_name(m, groupnum, (uint8_t *) tmp_groupname, &err)) {
         line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to retrieve group name (error %d)", err);
         return;
     }
 
-    char groupname[len + 1];
+    char groupname[TOX_GROUP_MAX_GROUP_NAME_LENGTH + 1];
     len = copy_tox_str(groupname, sizeof(groupname), tmp_groupname, len);
 
     if (len > 0) {
@@ -1038,13 +1032,8 @@ void groupchat_onGroupModeration(ToxWindow *self, Tox *m, uint32_t groupnum, uin
     char src_name[TOX_MAX_NAME_LENGTH + 1];
     char tgt_name[TOX_MAX_NAME_LENGTH + 1];
 
-    if (get_group_nick_truncate(m, src_name, src_peer_id, groupnum) == -1) {
-        return;
-    }
-
-    if (get_group_nick_truncate(m, tgt_name, tgt_peer_id, groupnum) == -1) {
-        return;
-    }
+    get_group_nick_truncate(m, src_name, src_peer_id, groupnum);
+    get_group_nick_truncate(m, tgt_name, tgt_peer_id, groupnum);
 
     int tgt_index = get_peer_index(groupnum, tgt_peer_id);
 
@@ -1103,7 +1092,7 @@ static void groupchat_onGroupNickChange(ToxWindow *self, Tox *m, uint32_t groupn
 
     groupchat_update_last_seen(groupnum, peer_id);
 
-    char oldnick[TOX_MAX_NAME_LENGTH];
+    char oldnick[TOX_MAX_NAME_LENGTH + 1];
     get_group_nick_truncate(m, oldnick, peer_id, groupnum);
 
     len = MIN(len, TOX_MAX_NAME_LENGTH - 1);
@@ -1159,31 +1148,19 @@ static void send_group_message(ToxWindow *self, Tox *m, uint32_t groupnum, const
         return;
     }
 
-    TOX_ERR_GROUP_SELF_QUERY sn_err;
-    size_t len = tox_group_self_get_name_size(m, groupnum, &sn_err);
-
-    if (sn_err != TOX_ERR_GROUP_SELF_QUERY_OK) {
-        return;
-    }
-
-    char selfname[len + 1];
-
-    if (!tox_group_self_get_name(m, groupnum, (uint8_t *) selfname, NULL)) {
-        return;
-    }
-
-    selfname[len] = '\0';
+    char self_nick[TOX_MAX_NAME_LENGTH + 1];
+    get_group_self_nick_truncate(m, self_nick, groupnum);
 
     char timefrmt[TIME_STR_SIZE];
     get_time_str(timefrmt, sizeof(timefrmt));
 
 
     if (type == TOX_MESSAGE_TYPE_NORMAL) {
-        line_info_add(self, timefrmt, selfname, NULL, OUT_MSG_READ, 0, 0, "%s", msg);
-        write_to_log(msg, selfname, ctx->log, false);
+        line_info_add(self, timefrmt, self_nick, NULL, OUT_MSG_READ, 0, 0, "%s", msg);
+        write_to_log(msg, self_nick, ctx->log, false);
     } else if (type == TOX_MESSAGE_TYPE_ACTION) {
-        line_info_add(self, timefrmt, selfname, NULL, OUT_ACTION_READ, 0, 0, "%s", msg);
-        write_to_log(msg, selfname, ctx->log, true);
+        line_info_add(self, timefrmt, self_nick, NULL, OUT_ACTION_READ, 0, 0, "%s", msg);
+        write_to_log(msg, self_nick, ctx->log, true);
     }
 }
 
