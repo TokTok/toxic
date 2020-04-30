@@ -1175,7 +1175,8 @@ static void send_group_prvt_message(ToxWindow *self, Tox *m, uint32_t groupnum, 
     }
 
     uint32_t i;
-    uint32_t peer_id, name_length = 0;
+    uint32_t peer_id = 0;
+    uint32_t name_length = 0;
     const char *nick = NULL;
 
     /* need to match the longest nick in case of nicks that are smaller sub-strings */
