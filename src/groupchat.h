@@ -56,15 +56,15 @@ typedef struct {
     size_t topic_length;
 } GroupChat;
 
-void exit_groupchat(ToxWindow *self, Tox *m, uint32_t groupnum, const char *partmessage, size_t length);
-int init_groupchat_win(Tox *m, uint32_t groupnum, const char *groupname, size_t length);
+void exit_groupchat(ToxWindow *self, Tox *m, uint32_t groupnumber, const char *partmessage, size_t length);
+int init_groupchat_win(Tox *m, uint32_t groupnumber, const char *groupname, size_t length);
 void set_nick_all_groups(Tox *m, const char *new_nick, size_t length);
 void set_status_all_groups(Tox *m, uint8_t status);
-int group_get_nick_peer_id(uint32_t groupnum, const char *nick, uint32_t *peer_id);
-int get_peer_index(uint32_t groupnum, uint32_t peer_id);
-void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnum, uint32_t peer_id, const char *name,
+int group_get_nick_peer_id(uint32_t groupnumber, const char *nick, uint32_t *peer_id);
+int get_peer_index(uint32_t groupnumber, uint32_t peer_id);
+void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnumber, uint32_t peer_id, const char *name,
                                       size_t name_len, const char *partmessage, size_t len);
-void groupchat_onGroupModeration(ToxWindow *self, Tox *m, uint32_t groupnum, uint32_t src_peer_id,
+void groupchat_onGroupModeration(ToxWindow *self, Tox *m, uint32_t groupnumber, uint32_t src_peer_id,
                                  uint32_t tgt_peer_id, TOX_GROUP_MOD_EVENT type);
 
 void groupchat_rejoin(ToxWindow *self, Tox *m);

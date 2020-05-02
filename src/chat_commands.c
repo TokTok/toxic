@@ -390,3 +390,4 @@ on_send_error:
     tox_file_control(m, self->num, filenum, TOX_FILE_CONTROL_CANCEL, NULL);
     fclose(file_to_send);
 }
+
