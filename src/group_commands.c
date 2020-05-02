@@ -657,10 +657,10 @@ void cmd_whois(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[M
         return;
     }
 
-    GroupChat *chat = &groupchats[self->num];
+    GroupChat *chat = get_groupchat(self->num);
 
     if (!chat) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Whois failed.");
+        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to fetch GroupChat object.");
         return;
     }
 
@@ -675,7 +675,7 @@ void cmd_whois(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[M
     int peer_index = get_peer_index(self->num, peer_id);
 
     if (peer_index < 0) {
-        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Whois failed.");
+        line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to fetch peer index.");
         return;
     }
 

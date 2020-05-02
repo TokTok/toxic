@@ -76,4 +76,10 @@ void groupchat_rejoin(ToxWindow *self, Tox *m);
 /* destroys and re-creates groupchat window */
 void redraw_groupchat_win(ToxWindow *self);
 
+/*
+ * Return a GroupChat pointer associated with groupnumber.
+ * Return NULL if groupnumber is invalid.
+ */
+GroupChat *get_groupchat(uint32_t groupnumber);
+
 #endif /* #define GROUPCHAT_H */
