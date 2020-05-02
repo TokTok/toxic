@@ -58,7 +58,7 @@ typedef struct {
 
 void exit_groupchat(ToxWindow *self, Tox *m, uint32_t groupnum, const char *partmessage, size_t length);
 int init_groupchat_win(Tox *m, uint32_t groupnum, const char *groupname, size_t length);
-void set_nick_all_groups(Tox *m, const char *nick, size_t length);
+void set_nick_all_groups(Tox *m, const char *new_nick, size_t length);
 void set_status_all_groups(Tox *m, uint8_t status);
 int group_get_nick_peer_id(uint32_t groupnum, const char *nick, uint32_t *peer_id);
 int get_peer_index(uint32_t groupnum, uint32_t peer_id);

@@ -148,6 +148,8 @@ static void groupchat_onGroupNickChange(ToxWindow *self, Tox *m, uint32_t groupn
                                         const char *newnick, size_t len);
 static void groupchat_onGroupStatusChange(ToxWindow *self, Tox *m, uint32_t groupnum, uint32_t peer_id,
                                           TOX_USER_STATUS status);
+static void groupchat_onGroupSelfNickChange(ToxWindow *self, Tox *m, uint32_t groupnumber, const char *old_nick,
+                                            size_t old_length, const char *new_nick, size_t length);
 
 /* Returns true if a group with groupnumber exists in the groupchats array */
 static bool groupnumber_valid(uint32_t groupnumber)
@@ -319,8 +321,7 @@ int init_groupchat_win(Tox *m, uint32_t groupnum, const char *groupname, size_t 
     return -1;
 }
 
-/* Note: the arguments to these functions are validated in the caller functions */
-void set_nick_all_groups(Tox *m, const char *nick, size_t length)
+void set_nick_all_groups(Tox *m, const char *new_nick, size_t length)
 {
     char timefrmt[TIME_STR_SIZE];
     get_time_str(timefrmt, sizeof(timefrmt));
@@ -333,20 +334,15 @@ void set_nick_all_groups(Tox *m, const char *nick, size_t length)
                 continue;
             }
 
-            TOX_ERR_GROUP_SELF_QUERY s_err;
-            uint32_t self_peer_id = tox_group_self_get_peer_id(m, self->num, &s_err);
-
-            if (s_err != TOX_ERR_GROUP_SELF_QUERY_OK) {
-                line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Failed to fetch self peer_id.");
-                continue;
-            }
+            char old_nick[TOX_MAX_NAME_LENGTH + 1];
+            size_t old_length = get_group_self_nick_truncate(m, old_nick, self->num);
 
             TOX_ERR_GROUP_SELF_NAME_SET err;
-            tox_group_self_set_name(m, groupchats[i].groupnumber, (uint8_t *) nick, length, &err);
+            tox_group_self_set_name(m, groupchats[i].groupnumber, (uint8_t *) new_nick, length, &err);
 
             switch (err) {
                 case TOX_ERR_GROUP_SELF_NAME_SET_OK: {
-                    groupchat_onGroupNickChange(self, m, self->num, self_peer_id, nick, length);
+                    groupchat_onGroupSelfNickChange(self, m, self->num, old_nick, old_length, new_nick, length);
                     break;
                 }
 
@@ -1075,8 +1071,45 @@ void groupchat_onGroupModeration(ToxWindow *self, Tox *m, uint32_t groupnum, uin
     }
 }
 
+static void groupchat_onGroupSelfNickChange(ToxWindow *self, Tox *m, uint32_t groupnumber, const char *old_nick,
+                                            size_t old_length, const char *new_nick, size_t length)
+{
+    UNUSED_VAR(old_length);
+
+    if (self->num != groupnumber || !groupnumber_valid(groupnumber)) {
+        return;
+    }
+
+    TOX_ERR_GROUP_SELF_QUERY s_err;
+    uint32_t peer_id = tox_group_self_get_peer_id(m, self->num, &s_err);
+
+    if (s_err != TOX_ERR_GROUP_SELF_QUERY_OK) {
+        return;
+    }
+
+    GroupChat *chat = &groupchats[groupnumber];
+
+    int peer_index = get_peer_index(groupnumber, peer_id);
+
+    if (peer_index < 0) {
+        return;
+    }
+
+    length = MIN(length, TOX_MAX_NAME_LENGTH - 1);
+    memcpy(groupchats[groupnumber].peer_list[peer_index].name, new_nick, length);
+    chat->peer_list[peer_index].name[length] = 0;
+    chat->peer_list[peer_index].name_length = length;
+
+    char timefrmt[TIME_STR_SIZE];
+    get_time_str(timefrmt, sizeof(timefrmt));
+    line_info_add(self, timefrmt, old_nick, chat->peer_list[peer_index].name, NAME_CHANGE, 0, MAGENTA, " is now known as ");
+
+    groupchat_update_last_seen(groupnumber, peer_id);
+    group_update_name_list(groupnumber);
+}
+
 static void groupchat_onGroupNickChange(ToxWindow *self, Tox *m, uint32_t groupnum, uint32_t peer_id,
-                                        const char *newnick, size_t len)
+                                        const char *new_nick, size_t length)
 {
     if (self->num != groupnum || !groupnumber_valid(groupnum)) {
         return;
@@ -1095,15 +1128,14 @@ static void groupchat_onGroupNickChange(ToxWindow *self, Tox *m, uint32_t groupn
     char oldnick[TOX_MAX_NAME_LENGTH + 1];
     get_group_nick_truncate(m, oldnick, peer_id, groupnum);
 
-    len = MIN(len, TOX_MAX_NAME_LENGTH - 1);
-    memcpy(groupchats[groupnum].peer_list[peer_index].name, newnick, len);
-    chat->peer_list[peer_index].name[len] = '\0';
-    chat->peer_list[peer_index].name_length = len;
+    length = MIN(length, TOX_MAX_NAME_LENGTH - 1);
+    memcpy(groupchats[groupnum].peer_list[peer_index].name, new_nick, length);
+    chat->peer_list[peer_index].name[length] = 0;
+    chat->peer_list[peer_index].name_length = length;
 
     char timefrmt[TIME_STR_SIZE];
     get_time_str(timefrmt, sizeof(timefrmt));
-    line_info_add(self, timefrmt, oldnick, chat->peer_list[peer_index].name, NAME_CHANGE, 0, MAGENTA,
-                  " is now known as ");
+    line_info_add(self, timefrmt, oldnick, chat->peer_list[peer_index].name, NAME_CHANGE, 0, MAGENTA, " is now known as ");
 
     group_update_name_list(groupnum);
 }
