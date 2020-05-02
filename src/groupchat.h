@@ -26,34 +26,38 @@
 #include "toxic.h"
 #include "windows.h"
 
+#ifndef SIDEWAR_WIDTH
 #define SIDEBAR_WIDTH 16
-#define SDBAR_OFST 2    /* Offset for the peer number box at the top of the statusbar */
-#define MAX_GROUPCHAT_NUM MAX_WINDOWS_NUM - 2
-#define GROUP_EVENT_WAIT 3
+#endif
 
-struct GroupPeer {
-    bool       active;
-    char       name[TOX_MAX_NAME_LENGTH];
-    size_t     name_length;
-    uint32_t   peer_id;
-    uint8_t    public_key[TOX_GROUP_PEER_PUBLIC_KEY_SIZE];
-    TOX_USER_STATUS status;
-    TOX_GROUP_ROLE  role;
-    uint64_t   last_active;
-};
+#define MAX_GROUPCHAT_NUM (MAX_WINDOWS_NUM - 2)
+
+typedef struct GroupPeer {
+    bool             active;
+    char             name[TOX_MAX_NAME_LENGTH];
+    size_t           name_length;
+    uint32_t         peer_id;
+    uint8_t          public_key[TOX_GROUP_PEER_PUBLIC_KEY_SIZE];
+    TOX_USER_STATUS  status;
+    TOX_GROUP_ROLE   role;
+    uint64_t         last_active;
+} GroupPeer;
 
 typedef struct {
-    struct GroupPeer *peer_list;
+    GroupPeer  *peer_list;
     char       *name_list;    /* List of peer names, needed for tab completion */
     uint32_t   num_peers;     /* Number of peers in the chat/name_list array */
     uint32_t   max_idx;       /* Maximum peer list index - 1 */
+
     uint32_t   groupnumber;
-    int        chatwin;
     bool       active;
     uint64_t   time_connected;    /* The time we successfully connected to the group */
+
+    char       topic[TOX_GROUP_MAX_TOPIC_LENGTH + 1];
+    size_t     topic_length;
+
+    int        chatwin;
     int        side_pos;     /* current position of the sidebar - used for scrolling up and down */
-    char topic[TOX_GROUP_MAX_TOPIC_LENGTH + 1];
-    size_t topic_length;
 } GroupChat;
 
 void exit_groupchat(ToxWindow *self, Tox *m, uint32_t groupnumber, const char *partmessage, size_t length);

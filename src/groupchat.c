@@ -68,6 +68,8 @@ static int max_groupchat_index = 0;
 extern struct user_settings *user_settings;
 extern struct Winthread Winthread;
 
+#define GROUP_SIDEBAR_OFFSET 2    /* Offset for the peer number box at the top of the statusbar */
+
 #ifdef PYTHON
 #define AC_NUM_GROUP_COMMANDS_PYTHON 1
 #else
@@ -1328,7 +1330,7 @@ static void groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
             sound_notify(self, notif_error, 0, NULL);
         }
     } else if (key == user_settings->key_peer_list_down) {    /* Scroll peerlist up and down one position */
-        int L = y2 - CHATBOX_HEIGHT - SDBAR_OFST;
+        int L = y2 - CHATBOX_HEIGHT - GROUP_SIDEBAR_OFFSET;
 
         if (chat->side_pos < (int) chat->num_peers - L) {
             ++chat->side_pos;
@@ -1422,7 +1424,7 @@ static void groupchat_onDraw(ToxWindow *self, Tox *m)
         mvwaddch(ctx->sidebar, 1, 0, ACS_LTEE);
         mvwhline(ctx->sidebar, 1, 1, ACS_HLINE, SIDEBAR_WIDTH - 1);
 
-        int maxlines = y2 - SDBAR_OFST - CHATBOX_HEIGHT;
+        int maxlines = y2 - GROUP_SIDEBAR_OFFSET - CHATBOX_HEIGHT;
         uint32_t i, offset = 0;
 
         pthread_mutex_lock(&Winthread.lock);
