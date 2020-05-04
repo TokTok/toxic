@@ -379,7 +379,7 @@ static DeviceError open_source(Device *device)
     alSourcei(device->source, AL_LOOPING, AL_FALSE);
 
     const uint32_t frame_size = device->frame_info.samples_per_frame * sample_size(device->frame_info.stereo);
-    uint16_t zeros[frame_size/2];
+    uint16_t zeros[frame_size / 2];
     memset(zeros, 0, frame_size);
 
     for (int i = 0; i < OPENAL_BUFS; ++i) {
