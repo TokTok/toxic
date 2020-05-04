@@ -7,7 +7,7 @@ os: linux
 addons:
   apt:
     packages:
-      - astyle
+      - asciidoc
       - libalut-dev
       - libconfig-dev
       - libnotify-dev
@@ -15,6 +15,7 @@ addons:
       - libopus-dev
       - libqrencode-dev
       - libvpx-dev
+      - libxml2-utils
 
 cache:
   directories:
@@ -38,3 +39,5 @@ script:
   - $HOME/cache/astyle/build/gcc/bin/astyle --options=astylerc $(find . -name "*.[ch]")
   - git diff --exit-code
   - make ENABLE_PYTHON=1 -j2
+  - xmllint --help
+  - make doc
