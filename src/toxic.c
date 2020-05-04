@@ -1013,148 +1013,148 @@ static void parse_args(int argc, char *argv[])
 
     while ((opt = getopt_long(argc, argv, opts_str, long_opts, &indexptr)) != -1) {
         switch (opt) {
-            case '4':
-                arg_opts.use_ipv4 = 1;
-                break;
+        case '4':
+            arg_opts.use_ipv4 = 1;
+            break;
 
-            case 'b':
-                arg_opts.debug = 1;
-                queue_init_message("stderr enabled");
-                break;
+        case 'b':
+            arg_opts.debug = 1;
+            queue_init_message("stderr enabled");
+            break;
 
-            case 'c':
-                snprintf(arg_opts.config_path, sizeof(arg_opts.config_path), "%s", optarg);
+        case 'c':
+            snprintf(arg_opts.config_path, sizeof(arg_opts.config_path), "%s", optarg);
 
-                if (!file_exists(arg_opts.config_path)) {
-                    queue_init_message("Config file not found");
-                }
+            if (!file_exists(arg_opts.config_path)) {
+                queue_init_message("Config file not found");
+            }
 
-                break;
+            break;
 
-            case 'd':
-                arg_opts.default_locale = 1;
-                queue_init_message("Using default POSIX locale");
-                break;
+        case 'd':
+            arg_opts.default_locale = 1;
+            queue_init_message("Using default POSIX locale");
+            break;
 
-            case 'e':
-                arg_opts.encrypt_data = 1;
-                break;
+        case 'e':
+            arg_opts.encrypt_data = 1;
+            break;
 
-            case 'f':
-                arg_opts.use_custom_data = 1;
+        case 'f':
+            arg_opts.use_custom_data = 1;
 
-                if (DATA_FILE) {
-                    free(DATA_FILE);
-                }
+            if (DATA_FILE) {
+                free(DATA_FILE);
+            }
 
-                if (BLOCK_FILE) {
-                    free(BLOCK_FILE);
-                }
+            if (BLOCK_FILE) {
+                free(BLOCK_FILE);
+            }
 
-                DATA_FILE = malloc(strlen(optarg) + 1);
-                strcpy(DATA_FILE, optarg);
+            DATA_FILE = malloc(strlen(optarg) + 1);
+            strcpy(DATA_FILE, optarg);
 
-                if (DATA_FILE == NULL) {
-                    exit_toxic_err("failed in parse_args", FATALERR_MEMORY);
-                }
+            if (DATA_FILE == NULL) {
+                exit_toxic_err("failed in parse_args", FATALERR_MEMORY);
+            }
 
-                BLOCK_FILE = malloc(strlen(optarg) + strlen("-blocklist") + 1);
+            BLOCK_FILE = malloc(strlen(optarg) + strlen("-blocklist") + 1);
 
-                if (BLOCK_FILE == NULL) {
-                    exit_toxic_err("failed in parse_args", FATALERR_MEMORY);
-                }
+            if (BLOCK_FILE == NULL) {
+                exit_toxic_err("failed in parse_args", FATALERR_MEMORY);
+            }
 
-                strcpy(BLOCK_FILE, optarg);
-                strcat(BLOCK_FILE, "-blocklist");
+            strcpy(BLOCK_FILE, optarg);
+            strcat(BLOCK_FILE, "-blocklist");
 
-                queue_init_message("Using '%s' data file", DATA_FILE);
+            queue_init_message("Using '%s' data file", DATA_FILE);
 
-                break;
+            break;
 
-            case 'l':
-                arg_opts.debug = true;
-                arg_opts.logging = true;
-                queue_init_message("Toxcore logging enabled in stderr");
-                break;
+        case 'l':
+            arg_opts.debug = true;
+            arg_opts.logging = true;
+            queue_init_message("Toxcore logging enabled in stderr");
+            break;
 
-            case 'n':
-                snprintf(arg_opts.nodes_path, sizeof(arg_opts.nodes_path), "%s", optarg);
-                break;
+        case 'n':
+            snprintf(arg_opts.nodes_path, sizeof(arg_opts.nodes_path), "%s", optarg);
+            break;
 
-            case 'o':
-                arg_opts.no_connect = 1;
-                queue_init_message("DHT disabled");
-                break;
+        case 'o':
+            arg_opts.no_connect = 1;
+            queue_init_message("DHT disabled");
+            break;
 
-            case 'p':
-                arg_opts.proxy_type = TOX_PROXY_TYPE_SOCKS5;
-                snprintf(arg_opts.proxy_address, sizeof(arg_opts.proxy_address), "%s", optarg);
+        case 'p':
+            arg_opts.proxy_type = TOX_PROXY_TYPE_SOCKS5;
+            snprintf(arg_opts.proxy_address, sizeof(arg_opts.proxy_address), "%s", optarg);
 
-                if (++optind > argc || argv[optind - 1][0] == '-') {
-                    exit_toxic_err("Proxy error", FATALERR_PROXY);
-                }
+            if (++optind > argc || argv[optind - 1][0] == '-') {
+                exit_toxic_err("Proxy error", FATALERR_PROXY);
+            }
 
-                port = strtol(argv[optind - 1], NULL, 10);
+            port = strtol(argv[optind - 1], NULL, 10);
 
-                if (port <= 0 || port > MAX_PORT_RANGE) {
-                    exit_toxic_err("Proxy error", FATALERR_PROXY);
-                }
+            if (port <= 0 || port > MAX_PORT_RANGE) {
+                exit_toxic_err("Proxy error", FATALERR_PROXY);
+            }
 
-                arg_opts.proxy_port = port;
-                break;
+            arg_opts.proxy_port = port;
+            break;
 
-            case 'P':
-                arg_opts.proxy_type = TOX_PROXY_TYPE_HTTP;
-                snprintf(arg_opts.proxy_address, sizeof(arg_opts.proxy_address), "%s", optarg);
+        case 'P':
+            arg_opts.proxy_type = TOX_PROXY_TYPE_HTTP;
+            snprintf(arg_opts.proxy_address, sizeof(arg_opts.proxy_address), "%s", optarg);
 
-                if (++optind > argc || argv[optind - 1][0] == '-') {
-                    exit_toxic_err("Proxy error", FATALERR_PROXY);
-                }
+            if (++optind > argc || argv[optind - 1][0] == '-') {
+                exit_toxic_err("Proxy error", FATALERR_PROXY);
+            }
 
-                port = strtol(argv[optind - 1], NULL, 10);
+            port = strtol(argv[optind - 1], NULL, 10);
 
-                if (port <= 0 || port > MAX_PORT_RANGE) {
-                    exit_toxic_err("Proxy error", FATALERR_PROXY);
-                }
+            if (port <= 0 || port > MAX_PORT_RANGE) {
+                exit_toxic_err("Proxy error", FATALERR_PROXY);
+            }
 
-                arg_opts.proxy_port = port;
-                break;
+            arg_opts.proxy_port = port;
+            break;
 
-            case 'r':
-                snprintf(arg_opts.nameserver_path, sizeof(arg_opts.nameserver_path), "%s", optarg);
+        case 'r':
+            snprintf(arg_opts.nameserver_path, sizeof(arg_opts.nameserver_path), "%s", optarg);
 
-                if (!file_exists(arg_opts.nameserver_path)) {
-                    queue_init_message("nameserver list not found");
-                }
+            if (!file_exists(arg_opts.nameserver_path)) {
+                queue_init_message("nameserver list not found");
+            }
 
-                break;
+            break;
 
-            case 't':
-                arg_opts.force_tcp = 1;
-                break;
+        case 't':
+            arg_opts.force_tcp = 1;
+            break;
 
-            case 'T':
-                port = strtol(optarg, NULL, 10);
+        case 'T':
+            port = strtol(optarg, NULL, 10);
 
-                if (port <= 0 || port > MAX_PORT_RANGE) {
-                    port = 14191;
-                }
+            if (port <= 0 || port > MAX_PORT_RANGE) {
+                port = 14191;
+            }
 
-                arg_opts.tcp_port = port;
-                break;
+            arg_opts.tcp_port = port;
+            break;
 
-            case 'u':
-                arg_opts.unencrypt_data = 1;
-                break;
+        case 'u':
+            arg_opts.unencrypt_data = 1;
+            break;
 
-            case 'v':
-                print_version();
-                exit(EXIT_SUCCESS);
+        case 'v':
+            print_version();
+            exit(EXIT_SUCCESS);
 
-            case 'h':
-            default:
-                print_usage();
-                exit(EXIT_SUCCESS);
+        case 'h':
+        default:
+            print_usage();
+            exit(EXIT_SUCCESS);
         }
     }
 }
