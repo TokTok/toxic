@@ -877,6 +877,7 @@ static bool peer_is_muted(const GroupPeer *peer)
 static float get_VAD_threshold(uint32_t groupnum)
 {
 #ifdef AUDIO
+
     if (!groupchats[groupnum].audio_enabled) {
         return 0.0;
     }
