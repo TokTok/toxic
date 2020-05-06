@@ -170,9 +170,7 @@ int bin_id_to_string(const char *bin_id, size_t bin_id_size, char *output, size_
         return -1;
     }
 
-    size_t i;
-
-    for (i = 0; i < TOX_ADDRESS_SIZE; ++i) {
+    for (size_t i = 0; i < TOX_ADDRESS_SIZE; ++i) {
         snprintf(&output[i * 2], output_size - (i * 2), "%02X", bin_id[i] & 0xff);
     }
 
@@ -190,9 +188,7 @@ int bin_pubkey_to_string(const uint8_t *bin_pubkey, size_t bin_pubkey_size, char
         return -1;
     }
 
-    size_t i;
-
-    for (i = 0; i < TOX_PUBLIC_KEY_SIZE; ++i) {
+    for (size_t i = 0; i < TOX_PUBLIC_KEY_SIZE; ++i) {
         snprintf(&output[i * 2], output_size - (i * 2), "%02X", bin_pubkey[i] & 0xff);
     }
 

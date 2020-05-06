@@ -308,7 +308,8 @@ static void help_draw_group(ToxWindow *self)
     wattroff(win, A_BOLD);
     wprintw(win, "  /audio <on> or <off>       : Enable/disable audio in an audio group\n");
     wprintw(win, "  /mute                      : Toggle self audio mute status\n");
-    wprintw(win, "  /mute <nick> or <pubkey>   : Toggle peer audio mute status\n\n");
+    wprintw(win, "  /mute <nick> or <pubkey>   : Toggle peer audio mute status\n");
+    wprintw(win, "  /sense <n>                 : VAD sensitivity threshold\n\n");
 #endif
 
     help_draw_bottom_menu(win);
