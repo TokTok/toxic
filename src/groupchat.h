@@ -53,9 +53,6 @@ typedef struct {
     bool       active;
     uint64_t   time_connected;    /* The time we successfully connected to the group */
 
-    char       topic[TOX_GROUP_MAX_TOPIC_LENGTH + 1];
-    size_t     topic_length;
-
     int        chatwin;
     int        side_pos;     /* current position of the sidebar - used for scrolling up and down */
 } GroupChat;
