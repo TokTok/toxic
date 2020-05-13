@@ -175,6 +175,9 @@ GroupChat *get_groupchat(uint32_t groupnumber)
 static const char *get_group_exit_string(Tox_Group_Exit_Type exit_type)
 {
     switch (exit_type) {
+        case TOX_GROUP_EXIT_TYPE_QUIT:
+            return "Quit";
+
         case TOX_GROUP_EXIT_TYPE_TIMEOUT:
             return "Connection timed out";
 
@@ -184,10 +187,11 @@ static const char *get_group_exit_string(Tox_Group_Exit_Type exit_type)
         case TOX_GROUP_EXIT_TYPE_KICK:
             return "Kicked";
 
-        case TOX_GROUP_EXIT_TYPE_QUIT:
-        /* fallthrough */
+        case TOX_GROUP_EXIT_TYPE_SYNC_ERROR:
+            return "Sync error";
+
         default:
-            return "Quit";
+            return "Unknown error";
     }
 }
 
