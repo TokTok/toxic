@@ -172,6 +172,25 @@ GroupChat *get_groupchat(uint32_t groupnumber)
     return NULL;
 }
 
+static const char *get_group_exit_string(Tox_Group_Exit_Type exit_type)
+{
+    switch (exit_type) {
+        case TOX_GROUP_EXIT_TYPE_TIMEOUT:
+            return "Connection timed out";
+
+        case TOX_GROUP_EXIT_TYPE_DISCONNECTED:
+            return "Disconnected";
+
+        case TOX_GROUP_EXIT_TYPE_KICK:
+            return "Kicked";
+
+        case TOX_GROUP_EXIT_TYPE_QUIT:
+        /* fallthrough */
+        default:
+            return "Quit";
+    }
+}
+
 void groupchat_rejoin(ToxWindow *self, Tox *m)
 {
     GroupChat *chat = get_groupchat(self->num);
@@ -829,10 +848,11 @@ static void groupchat_onGroupPeerJoin(ToxWindow *self, Tox *m, uint32_t groupnum
     }
 }
 
-void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnumber, uint32_t peer_id, const char *name,
-                                      size_t name_len, const char *partmessage, size_t len)
+void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnumber, uint32_t peer_id, Tox_Group_Exit_Type exit_type,
+                               const char *name, size_t name_len, const char *part_message, size_t length)
 {
     UNUSED_VAR(name_len);
+    UNUSED_VAR(length);
 
     if (self->num != groupnumber) {
         return;
@@ -844,13 +864,18 @@ void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnumber, ui
         return;
     }
 
+    char log_str[TOX_MAX_NAME_LENGTH + MAX_STR_SIZE];
     char timefrmt[TIME_STR_SIZE];
     get_time_str(timefrmt, sizeof(timefrmt));
 
-    line_info_add(self, timefrmt, name, NULL, DISCONNECTION, 0, RED, "has left the room (%s)", partmessage);
-
-    char log_str[TOX_MAX_NAME_LENGTH + MAX_STR_SIZE];
-    snprintf(log_str, sizeof(log_str), "%s has left the room (%s)", name, partmessage);
+    if (length > 0) {
+        line_info_add(self, timefrmt, name, NULL, DISCONNECTION, 0, RED, "has left the room (%s)", part_message);
+        snprintf(log_str, sizeof(log_str), "%s has left the room (%s)", name, part_message);
+    } else {
+        const char *exit_string = get_group_exit_string(exit_type);
+        line_info_add(self, timefrmt, name, NULL, DISCONNECTION, 0, RED, "[%s]", exit_string);
+        snprintf(log_str, sizeof(log_str), "%s [%s]", name, exit_string);
+    }
 
     write_to_log(log_str, name, self->chatwin->log, true);
     sound_notify(self, silent, NT_WNDALERT_2, NULL);
