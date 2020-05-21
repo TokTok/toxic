@@ -872,17 +872,19 @@ void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnumber, ui
     char timefrmt[TIME_STR_SIZE];
     get_time_str(timefrmt, sizeof(timefrmt));
 
-    if (length > 0) {
-        line_info_add(self, timefrmt, name, NULL, DISCONNECTION, 0, RED, "has left the room (%s)", part_message);
-        snprintf(log_str, sizeof(log_str), "%s has left the room (%s)", name, part_message);
-    } else {
-        const char *exit_string = get_group_exit_string(exit_type);
-        line_info_add(self, timefrmt, name, NULL, DISCONNECTION, 0, RED, "[%s]", exit_string);
-        snprintf(log_str, sizeof(log_str), "%s [%s]", name, exit_string);
-    }
+    if (exit_type != TOX_GROUP_EXIT_TYPE_SELF_DISCONNECTED) {
+        if (length > 0) {
+            line_info_add(self, timefrmt, name, NULL, DISCONNECTION, 0, RED, "[Quit]: %s", part_message);
+            snprintf(log_str, sizeof(log_str), "%s has left the room (%s)", name, part_message);
+        } else {
+            const char *exit_string = get_group_exit_string(exit_type);
+            line_info_add(self, timefrmt, name, NULL, DISCONNECTION, 0, RED, "[%s]", exit_string);
+            snprintf(log_str, sizeof(log_str), "%s [%s]", name, exit_string);
+        }
 
-    write_to_log(log_str, name, self->chatwin->log, true);
-    sound_notify(self, silent, NT_WNDALERT_2, NULL);
+        write_to_log(log_str, name, self->chatwin->log, true);
+        sound_notify(self, silent, NT_WNDALERT_2, NULL);
+    }
 
     int peer_index = get_peer_index(groupnumber, peer_id);
 
