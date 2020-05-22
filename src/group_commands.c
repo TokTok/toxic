@@ -55,6 +55,29 @@ void cmd_chatid(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[
     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "%s", chatid);
 }
 
+void cmd_disconnect(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE])
+{
+    Tox_Err_Group_Disconnect err;
+    tox_group_disconnect(m, self->num, &err);
+
+    switch (err) {
+        case TOX_ERR_GROUP_DISCONNECT_OK: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Disconnected from group. Type '/rejoin' to reconnect.");
+            return;
+        }
+
+        case TOX_ERR_GROUP_DISCONNECT_ALREADY_DISCONNECTED: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Already disconnected. Type '/rejoin' to connect.");
+            return;
+        }
+
+        default: {
+            line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0,  "Failed to disconnect from group. Error: %d", err);
+            return;
+        }
+    }
+}
+
 void cmd_ignore(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE])
 {
     if (argc < 1) {

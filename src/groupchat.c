@@ -86,7 +86,7 @@ extern struct Winthread Winthread;
 #define AC_NUM_GROUP_COMMANDS_AUDIO 0
 #endif /* AUDIO */
 
-#define AC_NUM_GROUP_COMMANDS (36 + AC_NUM_GROUP_COMMANDS_PYTHON + AC_NUM_GROUP_COMMANDS_QRCODE + AC_NUM_GROUP_COMMANDS_AUDIO)
+#define AC_NUM_GROUP_COMMANDS (37 + AC_NUM_GROUP_COMMANDS_PYTHON + AC_NUM_GROUP_COMMANDS_QRCODE + AC_NUM_GROUP_COMMANDS_AUDIO)
 
 /* groupchat command names used for tab completion. */
 static const char group_cmd_list[AC_NUM_GROUP_COMMANDS][MAX_CMDNAME_SIZE] = {
@@ -97,6 +97,7 @@ static const char group_cmd_list[AC_NUM_GROUP_COMMANDS][MAX_CMDNAME_SIZE] = {
     { "/clear"      },
     { "/close"      },
     { "/connect"    },
+    { "/disconnect" },
     { "/decline"    },
     { "/exit"       },
     { "/group"      },
