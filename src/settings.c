@@ -74,6 +74,8 @@ static struct ui_strings {
 
     const char *mplex_away;
     const char *mplex_away_note;
+
+    const char *group_part_message;
 } ui_strings = {
     "ui",
     "timestamps",
@@ -102,6 +104,7 @@ static struct ui_strings {
     "line_special",
     "mplex_away",
     "mplex_away_note",
+    "group_part_message",
 };
 
 static void ui_defaults(struct user_settings *settings)
@@ -400,6 +403,10 @@ int settings_load(struct user_settings *s, const char *patharg)
 
         if (config_setting_lookup_string(setting, ui_strings.mplex_away_note, &str)) {
             snprintf(s->mplex_away_note, sizeof(s->mplex_away_note), "%s", str);
+        }
+
+        if (config_setting_lookup_string(setting, ui_strings.group_part_message, &str)) {
+            snprintf(s->group_part_message, sizeof(s->group_part_message), "%s", str);
         }
     }
 

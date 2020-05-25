@@ -1403,7 +1403,15 @@ static void groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
                         ++offset;
                     }
 
-                    exit_groupchat(self, m, self->num, line + offset, ctx->len - offset);
+                    const char *part_message = line + offset;
+                    size_t part_length = ctx->len - offset;
+
+                    if (part_length > 0) {
+                        exit_groupchat(self, m, self->num, part_message, part_length);
+                    } else {
+                        exit_groupchat(self, m, self->num, user_settings->group_part_message, strlen(user_settings->group_part_message));
+                    }
+
                     return;
                 } else if (strncmp(line, "/me ", strlen("/me ")) == 0) {
                     send_group_message(self, m, self->num, line + 4, TOX_MESSAGE_TYPE_ACTION);

@@ -372,7 +372,7 @@ static void load_conferences(Tox *m)
     size_t num_chats = tox_conference_get_chatlist_size(m);
 
     if (num_chats == 0) {
-        return;        
+        return;
     }
 
     uint32_t *chatlist = malloc(num_chats * sizeof(uint32_t));

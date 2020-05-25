@@ -81,6 +81,7 @@ struct user_settings {
 
     int mplex_away; /* boolean (1 for reaction to terminal attach/detach) */
     char mplex_away_note [TOX_MAX_STATUS_MESSAGE_LENGTH];
+    char group_part_message[TOX_GROUP_MAX_PART_LENGTH];
 
 #ifdef AUDIO
     int audio_in_dev;
