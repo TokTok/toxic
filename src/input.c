@@ -196,7 +196,7 @@ static void input_skip_left(ToxWindow *self, int x, int mx_x)
     do {
         --ctx->pos;
         count += wcwidth(ctx->line[ctx->pos]);
-    } while (ctx->pos > 0 && (ctx->line[ctx->pos-1] != L' ' || ctx->line[ctx->pos] == L' '));
+    } while (ctx->pos > 0 && (ctx->line[ctx->pos - 1] != L' ' || ctx->line[ctx->pos] == L' '));
 
     if (ctx->start > 0 && (x >= mx_x - count)) {
         int s_len = wcwidth(ctx->line[ctx->start - 1]);
@@ -239,7 +239,7 @@ static void input_skip_right(ToxWindow *self, int x, int mx_x)
     do {
         count += wcwidth(ctx->line[ctx->pos]);
         ++ctx->pos;
-    } while (ctx->pos < ctx->len && !(ctx->line[ctx->pos] == L' ' && ctx->line[ctx->pos-1] != L' '));
+    } while (ctx->pos < ctx->len && !(ctx->line[ctx->pos] == L' ' && ctx->line[ctx->pos - 1] != L' '));
 
     int newpos = x + count;
 
