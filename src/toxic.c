@@ -796,6 +796,7 @@ static Tox *load_tox(char *data_path, struct Tox_Options *tox_opts, Tox_Err_New 
                     if (m == NULL) {
                         fclose(fp);
                         return NULL;
+
                     }
 
                     break;
