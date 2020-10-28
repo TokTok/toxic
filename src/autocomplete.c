@@ -350,6 +350,7 @@ int dir_match(ToxWindow *self, Tox *m, const wchar_t *line, const wchar_t *cmd)
     }
 
     struct dirent *entry;
+
     int dircount = 0;
 
     while ((entry = readdir(dp)) && dircount < MAX_DIRS) {

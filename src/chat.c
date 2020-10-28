@@ -1078,7 +1078,7 @@ bool chat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
                 "away",
                 "busy",
             };
-            diff = complete_line(self, (char **) status_cmd_list, sizeof(status_cmd_list) / sizeof(char*));
+            diff = complete_line(self, (char **) status_cmd_list, sizeof(status_cmd_list) / sizeof(char *));
         } else {
             diff = complete_line(self, (char **) chat_cmd_list, sizeof(chat_cmd_list) / sizeof(char *));
         }
