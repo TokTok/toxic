@@ -241,6 +241,12 @@ int qsort_strcasecmp_hlpr(const void *str1, const void *str2)
     return strcasecmp((const char *) str1, (const char *) str2);
 }
 
+/* case-insensitive string compare function for use with qsort */
+int qsort_ptr_char_array_helper(const void *str1, const void *str2)
+{
+    return strcasecmp(*(char **)str1, *(char **)str2);
+}
+
 /* Returns 1 if nick is valid, 0 if not. A valid toxic nick:
       - cannot be empty
       - cannot start with a space
