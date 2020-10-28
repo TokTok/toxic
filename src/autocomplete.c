@@ -71,7 +71,8 @@ static void print_dir_matches(ToxWindow *self, Tox *m, const void *list, size_t 
  *
  * Returns the length of the match.
  */
-static size_t get_str_match(ToxWindow *self, char *match, size_t match_sz, char **matches, size_t n_items, size_t max_size)
+static size_t get_str_match(ToxWindow *self, char *match, size_t match_sz, char **matches, size_t n_items,
+                            size_t max_size)
 {
     UNUSED_VAR(self);
 
