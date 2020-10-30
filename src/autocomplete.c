@@ -391,3 +391,4 @@ int dir_match(ToxWindow *self, Tox *m, const wchar_t *line, const wchar_t *cmd)
 
     return ret;
 }
+
