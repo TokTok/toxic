@@ -1245,6 +1245,7 @@ static void parse_args(int argc, char *argv[])
                 exit(EXIT_SUCCESS);
 
             case 'h':
+
             // Intentional fallthrough
             default:
                 print_usage();
