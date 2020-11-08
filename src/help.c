@@ -392,6 +392,7 @@ void help_onKey(ToxWindow *self, wint_t key)
             break;
 
 #ifdef PYTHON
+
         case L'p':
             help_init_window(self, 4 + num_registered_handlers(), help_max_width());
             self->help->type = HELP_PLUGIN;
