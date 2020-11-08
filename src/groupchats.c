@@ -1,4 +1,4 @@
-/*  groupchat.c
+/*  groupchats.c
  *
  *
  *  Copyright (C) 2020 Toxic All Rights Reserved.
@@ -50,7 +50,7 @@
 #include "toxic.h"
 #include "execute.h"
 #include "misc_tools.h"
-#include "groupchat.h"
+#include "groupchats.h"
 #include "prompt.h"
 #include "toxic_strings.h"
 #include "log.h"

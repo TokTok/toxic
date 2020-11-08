@@ -1,4 +1,4 @@
-/*  group_commands.c
+/*  groupchat_commands.c
  *
  *
  *  Copyright (C) 2020 Toxic All Rights Reserved.
@@ -28,7 +28,7 @@
 #include "line_info.h"
 #include "misc_tools.h"
 #include "log.h"
-#include "groupchat.h"
+#include "groupchats.h"
 
 extern GroupChat groupchats[MAX_GROUPCHAT_NUM];
 

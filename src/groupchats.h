@@ -1,4 +1,4 @@
-/*  groupchat.h
+/*  groupchats.h
  *
  *
  *  Copyright (C) 2020 Toxic All Rights Reserved.
@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef GROUPCHAT_H
-#define GROUPCHAT_H
+#ifndef GROUPCHATS_H
+#define GROUPCHATS_H
 
 #include "toxic.h"
 #include "windows.h"
@@ -79,4 +79,4 @@ void redraw_groupchat_win(ToxWindow *self);
  */
 GroupChat *get_groupchat(uint32_t groupnumber);
 
-#endif /* #define GROUPCHAT_H */
+#endif /* #define GROUPCHATS_H */

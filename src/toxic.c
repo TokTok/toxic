@@ -64,7 +64,7 @@
 #include "term_mplex.h"
 #include "name_lookup.h"
 #include "bootstrap.h"
-#include "groupchat.h"
+#include "groupchats.h"
 
 #ifdef X11
 #include "xtra.h"

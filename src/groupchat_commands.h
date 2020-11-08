@@ -1,4 +1,4 @@
-/*  group_commands.h
+/*  groupchat_commands.h
  *
  *
  *  Copyright (C) 2020 Toxic All Rights Reserved.
@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef GROUP_COMMANDS_H
-#define GROUP_COMMANDS_H
+#ifndef GROUPCHAT_COMMANDS_H
+#define GROUPCHAT_COMMANDS_H
 
 #include "windows.h"
 #include "toxic.h"
@@ -44,4 +44,4 @@ void cmd_unignore(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv
 void cmd_unmod(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE]);
 void cmd_whois(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[MAX_STR_SIZE]);
 
-#endif  /* GROUP_COMMANDS_H */
+#endif  /* GROUPCHAT_COMMANDS_H */
