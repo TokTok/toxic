@@ -860,4 +860,3 @@ void cmd_status(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[
 finish:
     unlock_status();
 }
-

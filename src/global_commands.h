@@ -65,4 +65,3 @@ void cmd_run(WINDOW *, ToxWindow *, Tox *, int argc, char (*argv)[MAX_STR_SIZE])
 #endif /* PYTHON */
 
 #endif /* GLOBAL_COMMANDS_H */
-

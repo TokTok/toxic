@@ -508,4 +508,3 @@ void help_onDraw(ToxWindow *self)
 #endif /* PYTHON */
     }
 }
-

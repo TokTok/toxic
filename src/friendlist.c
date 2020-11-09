@@ -1398,4 +1398,3 @@ ToxWindow *new_friendlist(void)
     strcpy(ret->name, "contacts");
     return ret;
 }
-

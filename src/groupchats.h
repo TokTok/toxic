@@ -45,7 +45,7 @@ typedef struct GroupPeer {
 
 typedef struct {
     GroupPeer  *peer_list;
-    char       *name_list;    /* List of peer names, needed for tab completion */
+    char       **name_list;   /* List of peer names, needed for tab completion */
     uint32_t   num_peers;     /* Number of peers in the chat/name_list array */
     uint32_t   max_idx;       /* Maximum peer list index - 1 */
 

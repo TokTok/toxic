@@ -317,4 +317,3 @@ void execute(WINDOW *w, ToxWindow *self, Tox *m, const char *input, int mode)
 
     line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Invalid command.");
 }
-

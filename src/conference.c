@@ -764,4 +764,3 @@ static ToxWindow *new_conference_chat(uint32_t conferencenum)
 
     return ret;
 }
-

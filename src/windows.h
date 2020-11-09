@@ -289,4 +289,3 @@ ToxWindow *get_active_window(void);
 void refresh_inactive_windows(void);
 
 #endif /* WINDOWS_H */
-

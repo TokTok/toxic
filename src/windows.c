@@ -936,4 +936,3 @@ void kill_all_windows(Tox *m)
     kill_friendlist(windows[1]);
     kill_prompt_window(windows[0]);
 }
-

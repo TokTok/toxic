@@ -127,6 +127,26 @@ void get_elapsed_time_str(char *buf, int bufsize, time_t secs)
     }
 }
 
+/* Converts seconds to string in format H hours, m minutes, s seconds */
+void get_elapsed_time_str_alt(char *buf, int bufsize, uint64_t secs)
+{
+    if (!secs) {
+        return;
+    }
+
+    long int seconds = secs % 60;
+    long int minutes = (secs % 3600) / 60;
+    long int hours = secs / 3600;
+
+    if (!minutes && !hours) {
+        snprintf(buf, bufsize, "%ld seconds", seconds);
+    } else if (!hours) {
+        snprintf(buf, bufsize, "%ld minutes, %ld seconds", minutes, seconds);
+    } else {
+        snprintf(buf, bufsize, "%ld hours, %ld minutes, %ld seconds", hours, minutes, seconds);
+    }
+}
+
 /*
  * Converts a hexidecimal string of length hex_len to binary format and puts the result in output.
  * output_size must be exactly half of hex_len.
@@ -678,4 +698,3 @@ void **malloc_ptr_array(size_t length, size_t bytes)
 
     return arr;
 }
-

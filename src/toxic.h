@@ -157,4 +157,3 @@ void on_group_moderation(Tox *m, uint32_t groupnumber, uint32_t source_peernum, 
                          TOX_GROUP_MOD_EVENT type, void *userdata);
 
 #endif /* TOXIC_H */
-

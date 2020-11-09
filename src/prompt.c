@@ -631,4 +631,3 @@ ToxWindow *new_prompt(void)
 
     return ret;
 }
-

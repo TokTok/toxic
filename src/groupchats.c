@@ -42,9 +42,9 @@
 /* compatibility with older versions of OpenAL */
 #ifndef ALC_ALL_DEVICES_SPECIFIER
 #include <AL/alext.h>
-#endif  /* ALC_ALL_DEVICES_SPECIFIER */
-#endif  /* __APPLE__ */
-#endif  /* AUDIO */
+#endif /* ALC_ALL_DEVICES_SPECIFIER */
+#endif /* __APPLE__ */
+#endif /* AUDIO */
 
 #include "windows.h"
 #include "toxic.h"
@@ -70,73 +70,56 @@ extern struct Winthread Winthread;
 
 #define GROUP_SIDEBAR_OFFSET 2    /* Offset for the peer number box at the top of the statusbar */
 
-#ifdef PYTHON
-#define AC_NUM_GROUP_COMMANDS_PYTHON 1
-#else
-#define AC_NUM_GROUP_COMMANDS_PYTHON 0
-#endif /* PYTHON */
-#ifdef QRCODE
-#define AC_NUM_GROUP_COMMANDS_QRCODE 1
-#else
-#define AC_NUM_GROUP_COMMANDS_QRCODE 0
-#endif /* QRCODE */
-#ifdef AUDIO
-#define AC_NUM_GROUP_COMMANDS_AUDIO 4
-#else
-#define AC_NUM_GROUP_COMMANDS_AUDIO 0
-#endif /* AUDIO */
-
-#define AC_NUM_GROUP_COMMANDS (37 + AC_NUM_GROUP_COMMANDS_PYTHON + AC_NUM_GROUP_COMMANDS_QRCODE + AC_NUM_GROUP_COMMANDS_AUDIO)
-
 /* groupchat command names used for tab completion. */
-static const char group_cmd_list[AC_NUM_GROUP_COMMANDS][MAX_CMDNAME_SIZE] = {
-    { "/accept"     },
-    { "/add"        },
-    { "/avatar"     },
-    { "/chatid"     },
-    { "/clear"      },
-    { "/close"      },
-    { "/connect"    },
-    { "/disconnect" },
-    { "/decline"    },
-    { "/exit"       },
-    { "/group"      },
-    { "/help"       },
-    { "/ignore"     },
-    { "/join"       },
-    { "/kick"       },
-    { "/log"        },
-    { "/mod"        },
-    { "/myid"       },
-    { "/mykey"      },
+static const char *group_cmd_list[] = {
+    "/accept",
+    "/add",
+    "/avatar",
+    "/chatid",
+    "/clear",
+    "/close",
+    "/conference",
+    "/connect",
+    "/disconnect",
+    "/decline",
+    "/exit",
+    "/group",
+    "/help",
+    "/ignore",
+    "/join" ,
+    "/kick",
+    "/log",
+    "/mod",
+    "/myid",
+    "/mykey",
 #ifdef QRCODE
-    { "/myqr"       },
+    "/myqr",
 #endif /* QRCODE */
-    { "/nick"       },
-    { "/note"       },
-    { "/passwd"     },
-    { "/nospam"     },
-    { "/peerlimit"  },
-    { "/privacy"    },
-    { "/quit"       },
-    { "/rejoin"     },
-    { "/requests"   },
+    "/nick",
+    "/note",
+    "/passwd",
+    "/nospam",
+    "/peerlimit",
+    "/privacy",
+    "/quit",
+    "/rejoin",
+    "/requests",
 #ifdef PYTHON
-    { "/run"        },
+    "/run",
 #endif /* PYTHON */
-    { "/silence"    },
-    { "/status"     },
-    { "/topic"      },
-    { "/unignore"   },
-    { "/unmod"      },
-    { "/unsilence"  },
-    { "/whisper"    },
-    { "/whois"      },
+    "/silence",
+    "/status",
+    "/topic",
+    "/unignore",
+    "/unmod",
+    "/unsilence",
+    "/whisper",
+    "/whois",
 #ifdef AUDIO
-    { "/lsdev"       },
-    { "/sdev"        },
-    { "/mute"        },
-    { "/sense"       },
+    "/lsdev",
+    "/sdev",
+    "/mute",
+    "/sense",
 #endif /* AUDIO */
 };
 
@@ -250,9 +233,7 @@ static void close_groupchat(ToxWindow *self, Tox *m, uint32_t groupnumber)
 
     realloc_peer_list(groupnumber, 0);
 
-    if (chat->name_list) {
-        free(chat->name_list);
-    }
+    free_ptr_array((void **) chat->name_list);
 
     memset(chat, 0, sizeof(GroupChat));
 
@@ -507,21 +488,22 @@ static void group_update_name_list(uint32_t groupnumber)
         return;
     }
 
-    if (chat->name_list) {
-        free(chat->name_list);
+    free_ptr_array((void **) chat->name_list);
+
+    chat->name_list = (char **) malloc_ptr_array(chat->num_peers, TOX_MAX_NAME_LENGTH + 1);
+
+    if (!chat->name_list) {
+        fprintf(stderr, "WARNING: Out of memory in group_update_name_list()\n");
+        return;
     }
 
-    chat->name_list = malloc(sizeof(char *) * chat->num_peers * TOX_MAX_NAME_LENGTH);
+    uint32_t count = 0;
 
-    if (chat->name_list == NULL) {
-        exit_toxic_err("failed in group_update_name_list", FATALERR_MEMORY);
-    }
-
-    uint32_t i, count = 0;
-
-    for (i = 0; i < chat->max_idx; ++i) {
+    for (uint32_t i = 0; i < chat->max_idx; ++i) {
         if (chat->peer_list[i].active) {
-            memcpy(&chat->name_list[count * TOX_MAX_NAME_LENGTH], chat->peer_list[i].name, chat->peer_list[i].name_length + 1);
+            size_t length = chat->peer_list[i].name_length;
+            memcpy(chat->name_list[count], chat->peer_list[i].name, length);
+            chat->name_list[count][length] = 0;
             ++count;
         }
     }
@@ -1305,14 +1287,17 @@ static void send_group_prvt_message(ToxWindow *self, Tox *m, uint32_t groupnumbe
     write_to_log(msg, pm_nick, ctx->log, false);
 }
 
-static void groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
+/*
+ * Return true if input is recognized by handler
+ */
+static bool groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
 {
     ChatContext *ctx = self->chatwin;
 
     GroupChat *chat = get_groupchat(self->num);
 
     if (!chat) {
-        return;
+        return false;
     }
 
     int x, y, y2, x2;
@@ -1322,42 +1307,46 @@ static void groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
     UNUSED_VAR(y);
 
     if (x2 <= 0 || y2 <= 0) {
-        return;
+        return false;
     }
 
     if (self->help->active) {
         help_onKey(self, key);
-        return;
+        return true;
     }
 
-    if (ctx->pastemode && key == '\r') {
-        key = '\n';
+    if (ctx->pastemode && key == L'\r') {
+        key = L'\n';
     }
 
-    if (ltr || key == '\n') {    /* char is printable */
+    if (ltr || key == L'\n') {    /* char is printable */
         input_new_char(self, key, x, x2);
-        return;
+        return true;
     }
 
     if (line_info_onKey(self, key)) {
-        return;
+        return true;
     }
 
     if (input_handle(self, key, x, x2)) {
-        return;
+        return true;
     }
 
-    if (key == '\t') {  /* TAB key: auto-completes peer name or command */
+    bool input_ret = false;
+
+    if (key == L'\t') {  /* TAB key: auto-completes peer name or command */
+        input_ret = true;
+
         if (ctx->len > 0) {
             int diff = -1;
 
             /* TODO: make this not suck */
             if (ctx->line[0] != L'/' || wcschr(ctx->line, L' ') != NULL) {
-                diff = complete_line(self, chat->name_list, chat->num_peers, TOX_MAX_NAME_LENGTH);
+                diff = complete_line(self, (const char **) chat->name_list, chat->num_peers);
             } else if (wcsncmp(ctx->line, L"/avatar \"", wcslen(L"/avatar \"")) == 0) {
                 diff = dir_match(self, m, ctx->line, L"/avatar");
             } else {
-                diff = complete_line(self, group_cmd_list, AC_NUM_GROUP_COMMANDS, MAX_CMDNAME_SIZE);
+                diff = complete_line(self, group_cmd_list, sizeof(group_cmd_list) / sizeof(char *));
             }
 
             if (diff != -1) {
@@ -1371,17 +1360,20 @@ static void groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
         } else {
             sound_notify(self, notif_error, 0, NULL);
         }
-    } else if (key == user_settings->key_peer_list_down) {    /* Scroll peerlist up and down one position */
+    } else if (key == T_KEY_C_DOWN) {    /* Scroll peerlist up and down one position */
+        input_ret = true;
         int L = y2 - CHATBOX_HEIGHT - GROUP_SIDEBAR_OFFSET;
 
         if (chat->side_pos < (int) chat->num_peers - L) {
             ++chat->side_pos;
         }
-    } else if (key == user_settings->key_peer_list_up) {
+    } else if (key == T_KEY_C_UP) {
+        input_ret = true;
         if (chat->side_pos > 0) {
             --chat->side_pos;
         }
-    } else if (key == '\r') {
+    } else if (key == L'\r') {
+        input_ret = true;
         rm_trailing_spaces_buf(ctx);
 
         if (!wstring_is_empty(ctx->line)) {
@@ -1412,7 +1404,7 @@ static void groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
                         exit_groupchat(self, m, self->num, user_settings->group_part_message, strlen(user_settings->group_part_message));
                     }
 
-                    return;
+                    return true;
                 } else if (strncmp(line, "/me ", strlen("/me ")) == 0) {
                     send_group_message(self, m, self->num, line + 4, TOX_MESSAGE_TYPE_ACTION);
                 } else if (strncmp(line, "/whisper ", strlen("/whisper ")) == 0) {
@@ -1429,10 +1421,13 @@ static void groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
             reset_buf(ctx);
         }
     }
+
+    return input_ret;
 }
 
 static void groupchat_onDraw(ToxWindow *self, Tox *m)
 {
+
     int x2, y2;
     getmaxyx(self->window, y2, x2);
 

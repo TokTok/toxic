@@ -352,4 +352,3 @@ bool input_handle(ToxWindow *self, wint_t key, int x, int mx_x)
 
     return match;
 }
-

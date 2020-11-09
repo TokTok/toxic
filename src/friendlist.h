@@ -108,4 +108,3 @@ void sort_friendlist_index(void);
 bool friend_is_blocked(const char *public_key);
 
 #endif /* end of include guard: FRIENDLIST_H */
-

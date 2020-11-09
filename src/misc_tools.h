@@ -204,4 +204,3 @@ void free_ptr_array(void **arr);
 void **malloc_ptr_array(size_t length, size_t bytes);
 
 #endif /* MISC_TOOLS_H */
-

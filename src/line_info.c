@@ -700,4 +700,3 @@ void line_info_clear(struct history *hst)
     hst->line_start = hst->line_end;
     hst->start_id = hst->line_start->id;
 }
-

@@ -64,4 +64,3 @@ int init_conference_win(Tox *m, uint32_t conferencenum, uint8_t type, const char
 void redraw_conference_win(ToxWindow *self);
 
 #endif /* CONFERENCE_H */
-
