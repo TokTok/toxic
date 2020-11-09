@@ -142,7 +142,8 @@ struct ToxWindow {
     void(*onGroupMessage)(ToxWindow *, Tox *, uint32_t, uint32_t, TOX_MESSAGE_TYPE, const char *, size_t);
     void(*onGroupPrivateMessage)(ToxWindow *, Tox *, uint32_t, uint32_t, const char *, size_t);
     void(*onGroupPeerJoin)(ToxWindow *, Tox *, uint32_t, uint32_t);
-    void(*onGroupPeerExit)(ToxWindow *, Tox *, uint32_t, uint32_t, TOX_GROUP_EXIT_TYPE, const char*, size_t, const char *, size_t);
+    void(*onGroupPeerExit)(ToxWindow *, Tox *, uint32_t, uint32_t, TOX_GROUP_EXIT_TYPE, const char *, size_t, const char *,
+                           size_t);
     void(*onGroupNickChange)(ToxWindow *, Tox *, uint32_t, uint32_t, const char *, size_t);
     void(*onGroupStatusChange)(ToxWindow *, Tox *, uint32_t, uint32_t, TOX_USER_STATUS);
     void(*onGroupTopicChange)(ToxWindow *, Tox *, uint32_t, uint32_t, const char *, size_t);

@@ -322,7 +322,8 @@ void on_friend_read_receipt(Tox *m, uint32_t friendnumber, uint32_t receipt, voi
     }
 }
 
-void on_group_invite(Tox *m, uint32_t friendnumber, const uint8_t *invite_data, size_t length, const uint8_t *group_name,
+void on_group_invite(Tox *m, uint32_t friendnumber, const uint8_t *invite_data, size_t length,
+                     const uint8_t *group_name,
                      size_t group_name_length, void *userdata)
 {
     char gname[MAX_STR_SIZE + 1];
@@ -348,7 +349,8 @@ void on_group_message(Tox *m, uint32_t groupnumber, uint32_t peer_id, TOX_MESSAG
     }
 }
 
-void on_group_private_message(Tox *m, uint32_t groupnumber, uint32_t peer_id, TOX_MESSAGE_TYPE type, const uint8_t *message,
+void on_group_private_message(Tox *m, uint32_t groupnumber, uint32_t peer_id, TOX_MESSAGE_TYPE type,
+                              const uint8_t *message,
                               size_t length, void *userdata)
 {
     char msg[MAX_STR_SIZE + 1];
@@ -379,7 +381,8 @@ void on_group_peer_join(Tox *m, uint32_t groupnumber, uint32_t peer_id, void *us
     }
 }
 
-void on_group_peer_exit(Tox *m, uint32_t groupnumber, uint32_t peer_id, Tox_Group_Exit_Type exit_type, const uint8_t *nick,
+void on_group_peer_exit(Tox *m, uint32_t groupnumber, uint32_t peer_id, Tox_Group_Exit_Type exit_type,
+                        const uint8_t *nick,
                         size_t nick_len, const uint8_t *part_message, size_t length, void *userdata)
 {
     char toxic_nick[TOXIC_MAX_NAME_LENGTH + 1];
@@ -928,7 +931,8 @@ void kill_all_windows(Tox *m)
         } else if (windows[i]->is_conference) {
             free_conference(windows[i], windows[i]->num);
         } else if (windows[i]->is_group) {
-            exit_groupchat(windows[i], m, windows[i]->num, user_settings->group_part_message, strlen(user_settings->group_part_message));
+            exit_groupchat(windows[i], m, windows[i]->num, user_settings->group_part_message,
+                           strlen(user_settings->group_part_message));
         }
     }
 

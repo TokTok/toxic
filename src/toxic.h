@@ -134,14 +134,17 @@ void on_file_recv(Tox *m, uint32_t friendnumber, uint32_t filenumber, uint32_t k
                   const uint8_t *filename, size_t filename_length, void *userdata);
 void on_friend_typing(Tox *m, uint32_t friendnumber, bool is_typing, void *userdata);
 void on_friend_read_receipt(Tox *m, uint32_t friendnumber, uint32_t receipt, void *userdata);
-void on_group_invite(Tox *m, uint32_t friendnumber, const uint8_t *invite_data, size_t length, const uint8_t *group_name,
+void on_group_invite(Tox *m, uint32_t friendnumber, const uint8_t *invite_data, size_t length,
+                     const uint8_t *group_name,
                      size_t group_name_length, void *userdata);
 void on_group_message(Tox *m, uint32_t groupnumber, uint32_t peernumber, TOX_MESSAGE_TYPE type,
                       const uint8_t *message, size_t length, void *userdata);
-void on_group_private_message(Tox *m, uint32_t groupnumber, uint32_t peernumber, TOX_MESSAGE_TYPE type, const uint8_t *message, size_t length,
+void on_group_private_message(Tox *m, uint32_t groupnumber, uint32_t peernumber, TOX_MESSAGE_TYPE type,
+                              const uint8_t *message, size_t length,
                               void *userdata);
 void on_group_peer_join(Tox *m, uint32_t groupnumber, uint32_t peernumber, void *userdata);
-void on_group_peer_exit(Tox *m, uint32_t groupnumber, uint32_t peer_id, Tox_Group_Exit_Type exit_type, const uint8_t *nick,
+void on_group_peer_exit(Tox *m, uint32_t groupnumber, uint32_t peer_id, Tox_Group_Exit_Type exit_type,
+                        const uint8_t *nick,
                         size_t nick_len, const uint8_t *partmsg, size_t length, void *userdata);
 void on_group_topic_change(Tox *m, uint32_t groupnumber, uint32_t peernumber, const uint8_t *topic, size_t length,
                            void *userdata);

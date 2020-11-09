@@ -86,7 +86,7 @@ static const char *group_cmd_list[] = {
     "/group",
     "/help",
     "/ignore",
-    "/join" ,
+    "/join",
     "/kick",
     "/log",
     "/mod",
@@ -133,9 +133,9 @@ static int realloc_peer_list(uint32_t groupnumber, uint32_t n);
 static void groupchat_onGroupNickChange(ToxWindow *self, Tox *m, uint32_t groupnumber, uint32_t peer_id,
                                         const char *new_nick, size_t len);
 static void groupchat_onGroupStatusChange(ToxWindow *self, Tox *m, uint32_t groupnumber, uint32_t peer_id,
-                                          TOX_USER_STATUS status);
+        TOX_USER_STATUS status);
 static void groupchat_onGroupSelfNickChange(ToxWindow *self, Tox *m, uint32_t groupnumber, const char *old_nick,
-                                            size_t old_length, const char *new_nick, size_t length);
+        size_t old_length, const char *new_nick, size_t length);
 
 /*
  * Return a GroupChat pointer associated with groupnumber.
@@ -467,6 +467,7 @@ int get_peer_index(uint32_t groupnumber, uint32_t peer_id)
     }
 
     uint32_t i;
+
     for (i = 0; i < chat->max_idx; ++i) {
         if (!chat->peer_list[i].active) {
             continue;
@@ -835,7 +836,8 @@ static void groupchat_onGroupPeerJoin(ToxWindow *self, Tox *m, uint32_t groupnum
     }
 }
 
-void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnumber, uint32_t peer_id, Tox_Group_Exit_Type exit_type,
+void groupchat_onGroupPeerExit(ToxWindow *self, Tox *m, uint32_t groupnumber, uint32_t peer_id,
+                               Tox_Group_Exit_Type exit_type,
                                const char *name, size_t name_len, const char *part_message, size_t length)
 {
     UNUSED_VAR(name_len);
@@ -1075,7 +1077,7 @@ void groupchat_onGroupModeration(ToxWindow *self, Tox *m, uint32_t groupnumber, 
 }
 
 static void groupchat_onGroupSelfNickChange(ToxWindow *self, Tox *m, uint32_t groupnumber, const char *old_nick,
-                                            size_t old_length, const char *new_nick, size_t length)
+        size_t old_length, const char *new_nick, size_t length)
 {
     UNUSED_VAR(old_length);
 
@@ -1369,6 +1371,7 @@ static bool groupchat_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
         }
     } else if (key == T_KEY_C_UP) {
         input_ret = true;
+
         if (chat->side_pos > 0) {
             --chat->side_pos;
         }
