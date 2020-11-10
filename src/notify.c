@@ -407,7 +407,9 @@ void kill_notifs(int id)
                 notify_notification_close(actives[i].box, &ignore);
             }
 
-            actives[i] = (struct _ActiveNotifications){0};
+            actives[i] = (struct _ActiveNotifications) {
+                0
+            };
         }
     }
 
