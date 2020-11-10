@@ -403,10 +403,12 @@ void kill_notifs(int id)
 
         if (*actives[i].id_indicator == id) {
 #ifdef BOX_NOTIFY
+
             if (actives[i].box) {
                 GError *ignore;
                 notify_notification_close(actives[i].box, &ignore);
             }
+
 #endif // BOX_NOTIFY
 
             actives[i] = (struct _ActiveNotifications) {
