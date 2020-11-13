@@ -64,6 +64,7 @@
 #include "term_mplex.h"
 #include "name_lookup.h"
 #include "bootstrap.h"
+#include "groupchats.h"
 
 #ifdef X11
 #include "xtra.h"
@@ -355,6 +356,18 @@ static void load_friendlist(Tox *m)
     }
 
     sort_friendlist_index();
+}
+
+static void load_groups(Tox *m)
+{
+    size_t i;
+    size_t numgroups = tox_group_get_number_groups(m);
+
+    for (i = 0; i < numgroups; ++i) {
+        if (init_groupchat_win(m, i, NULL, 0) != 0) {
+            tox_group_leave(m, i, NULL, 0, NULL);
+        }
+    }
 }
 
 static void load_conferences(Tox *m)
@@ -687,6 +700,20 @@ static void init_tox_callbacks(Tox *m)
     tox_callback_file_chunk_request(m, on_file_chunk_request);
     tox_callback_file_recv_control(m, on_file_recv_control);
     tox_callback_file_recv_chunk(m, on_file_recv_chunk);
+    tox_callback_group_invite(m, on_group_invite);
+    tox_callback_group_message(m, on_group_message);
+    tox_callback_group_private_message(m, on_group_private_message);
+    tox_callback_group_peer_status(m, on_group_status_change);
+    tox_callback_group_peer_join(m, on_group_peer_join);
+    tox_callback_group_peer_exit(m, on_group_peer_exit);
+    tox_callback_group_peer_name(m, on_group_nick_change);
+    tox_callback_group_topic(m, on_group_topic_change);
+    tox_callback_group_peer_limit(m, on_group_peer_limit);
+    tox_callback_group_privacy_state(m, on_group_privacy_state);
+    tox_callback_group_password(m, on_group_password);
+    tox_callback_group_self_join(m, on_group_self_join);
+    tox_callback_group_join_fail(m, on_group_rejected);
+    tox_callback_group_moderation(m, on_group_moderation);
 }
 
 static void init_tox_options(struct Tox_Options *tox_opts)
@@ -986,7 +1013,9 @@ void *thread_cqueue(void *data)
     while (true) {
         pthread_mutex_lock(&Winthread.lock);
 
-        for (size_t i = 2; i < MAX_WINDOWS_NUM; ++i) {
+        size_t i;
+
+        for (i = 2; i < MAX_WINDOWS_NUM; ++i) {
             ToxWindow *toxwin = get_window_ptr(i);
 
             if ((toxwin != NULL) && (toxwin->type == WINDOW_TYPE_CHAT)
@@ -997,7 +1026,7 @@ void *thread_cqueue(void *data)
 
         pthread_mutex_unlock(&Winthread.lock);
 
-        sleep_thread(750000L); // 0.75 seconds
+        sleep_thread(4000L);
     }
 }
 
@@ -1048,9 +1077,7 @@ static void print_version(void)
 
 static void set_default_opts(void)
 {
-    arg_opts = (struct arg_opts) {
-        0
-    };
+    memset(&arg_opts, 0, sizeof(struct arg_opts));
 
     /* set any non-zero defaults here*/
     arg_opts.proxy_type = TOX_PROXY_TYPE_NONE;
@@ -1427,6 +1454,7 @@ int main(int argc, char **argv)
 
     prompt = init_windows(m);
     prompt_init_statusbar(prompt, m, !datafile_exists);
+    load_groups(m);
     load_conferences(m);
 
     /* thread for ncurses stuff */

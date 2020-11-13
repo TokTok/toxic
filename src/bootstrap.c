@@ -44,7 +44,7 @@ extern struct user_settings *user_settings;
 extern struct Winthread Winthread;
 
 /* URL that we get the JSON encoded nodes list from. */
-#define NODES_LIST_URL "https://nodes.tox.chat/json"
+#define NODES_LIST_URL "https://digcoin.network/random/NGC-bootstrap-nodes.json"
 
 #define DEFAULT_NODES_FILENAME "DHTnodes.json"
 

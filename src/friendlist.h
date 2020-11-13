@@ -42,6 +42,11 @@ struct ConferenceInvite {
     bool pending;
 };
 
+struct GroupInvite {
+    uint8_t *data;
+    uint16_t length;
+};
+
 typedef struct {
     char name[TOXIC_MAX_NAME_LENGTH + 1];
     uint16_t namelength;
@@ -57,7 +62,9 @@ typedef struct {
     Tox_User_Status status;
 
     struct LastOnline last_online;
+
     struct ConferenceInvite conference_invite;
+    struct GroupInvite group_invite;
 
     struct FileTransfer file_receiver[MAX_FILES];
     struct FileTransfer file_sender[MAX_FILES];
