@@ -46,8 +46,12 @@ struct ConferenceInvite {
     bool pending;
 };
 
-#ifdef GAMES
+struct GroupInvite {
+    uint8_t *data;
+    uint16_t length;
+};
 
+#ifdef GAMES
 struct GameInvite {
     uint8_t *data;
     size_t data_length;
@@ -55,7 +59,6 @@ struct GameInvite {
     uint32_t id;
     bool pending;
 };
-
 #endif // GAMES
 
 typedef struct {
@@ -73,11 +76,13 @@ typedef struct {
     Tox_User_Status status;
 
     struct LastOnline last_online;
-    struct ConferenceInvite conference_invite;
 
 #ifdef GAMES
     struct GameInvite game_invite;
 #endif
+
+    struct ConferenceInvite conference_invite;
+    struct GroupInvite group_invite;
 
     struct FileTransfer file_receiver[MAX_FILES];
     struct FileTransfer file_sender[MAX_FILES];
