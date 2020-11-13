@@ -114,7 +114,7 @@ static struct cmd_func conference_commands[] = {
 
 static struct cmd_func groupchat_commands[] = {
     { "/chatid",    cmd_chatid         },
-    { "/disconnect",cmd_disconnect     },
+    { "/disconnect", cmd_disconnect     },
     { "/ignore",    cmd_ignore         },
     { "/kick",      cmd_kick           },
     { "/mod",       cmd_mod            },
