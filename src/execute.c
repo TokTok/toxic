@@ -146,9 +146,9 @@ static struct cmd_func groupchat_commands[] = {
 };
 
 #ifdef PYTHON
-#define SPECIAL_COMMANDS 7
+#define SPECIAL_COMMANDS 18
 #else
-#define SPECIAL_COMMANDS 6
+#define SPECIAL_COMMANDS 19
 #endif /* PYTHON */
 
 /* Special commands are commands that only take one argument even if it contains spaces */
