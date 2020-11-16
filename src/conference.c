@@ -763,9 +763,11 @@ static bool conference_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
     ConferenceChat *chat = &conferences[self->num];
 
 #ifdef AUDIO
+
     if (chat->audio_enabled && chat->push_to_talk_enabled && key == KEY_F(2)) {
         conference_enable_push_to_talk(chat);
     }
+
 #endif // AUDIO
 
     if (key == L'\t') {  /* TAB key: auto-completes peer name or command */
