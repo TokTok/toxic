@@ -85,6 +85,7 @@ struct user_settings {
     int audio_in_dev;
     int audio_out_dev;
     double VAD_threshold;
+    int push_to_talk;      /* boolean */
 #endif
 };
 

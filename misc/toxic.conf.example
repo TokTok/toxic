@@ -84,6 +84,9 @@ audio = {
 
   // default VAD threshold; float (recommended values are 1.0-40.0)
   VAD_threshold=5.0;
+
+  // toggle conference push-to-talk
+  push_to_talk=false;
 };
 
 tox = {

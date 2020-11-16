@@ -100,6 +100,7 @@ static const char *conference_cmd_list[] = {
     "/quit",
     "/requests",
 #ifdef AUDIO
+    "/ptt",
     "/sense",
 #endif
     "/status",
@@ -153,6 +154,7 @@ int init_conference_win(Tox *m, uint32_t conferencenum, uint8_t type, const char
             conferences[i].start_time = get_unix_time();
             conferences[i].audio_enabled = false;
             conferences[i].last_sent_audio = 0;
+            conferences[i].push_to_talk_enabled = user_settings->push_to_talk;
 
             set_active_window_index(conferences[i].chatwin);
             set_window_title(self, title, title_length);
@@ -492,6 +494,26 @@ static ConferencePeer *peer_in_conference(uint32_t conferencenum, uint32_t peern
 }
 
 #ifdef AUDIO
+static bool conference_check_push_to_talk(ConferenceChat *chat)
+{
+    if (!chat->push_to_talk_enabled) {
+        return true;
+    }
+
+    if (!chat->push_to_talk_active || timed_out(chat->ptt_last_pushed, 1)) {
+        chat->push_to_talk_active = false;
+        return false;
+    }
+
+    return true;
+}
+
+static void conference_enable_push_to_talk(ConferenceChat *chat)
+{
+    chat->push_to_talk_active = true;
+    chat->ptt_last_pushed = get_unix_time();
+}
+
 static void set_peer_audio_position(Tox *m, uint32_t conferencenum, uint32_t peernum)
 {
     ConferenceChat *chat = &conferences[conferencenum];
@@ -523,7 +545,7 @@ static void set_peer_audio_position(Tox *m, uint32_t conferencenum, uint32_t pee
     const float angle = asinf(peer_posn - (float)(num_posns - 1) / 2);
     set_source_position(peer->audio_out_idx, sinf(angle), cosf(angle), 0);
 }
-#endif
+#endif // AUDIO
 
 
 static bool find_peer_by_pubkey(const ConferencePeer *list, uint32_t num_peers, uint8_t *pubkey, uint32_t *idx)
@@ -698,7 +720,6 @@ static int sidebar_offset(uint32_t conferencenum)
     return 2 + conferences[conferencenum].audio_enabled;
 }
 
-
 /*
  * Return true if input is recognized by handler
  */
@@ -740,6 +761,12 @@ static bool conference_onKey(ToxWindow *self, Tox *m, wint_t key, bool ltr)
 
     bool input_ret = false;
     ConferenceChat *chat = &conferences[self->num];
+
+#ifdef AUDIO
+    if (chat->audio_enabled && chat->push_to_talk_enabled && key == KEY_F(2)) {
+        conference_enable_push_to_talk(chat);
+    }
+#endif // AUDIO
 
     if (key == L'\t') {  /* TAB key: auto-completes peer name or command */
         input_ret = true;
@@ -921,6 +948,12 @@ static void conference_onDraw(ToxWindow *self, Tox *m)
         return;
     }
 
+    ConferenceChat *chat = &conferences[self->num];
+
+    if (!chat->active) {
+        return;
+    }
+
     ChatContext *ctx = self->chatwin;
 
     pthread_mutex_lock(&Winthread.lock);
@@ -943,8 +976,8 @@ static void conference_onDraw(ToxWindow *self, Tox *m)
         mvwaddch(ctx->sidebar, y2 - CHATBOX_HEIGHT, 0, ACS_BTEE);
 
         pthread_mutex_lock(&Winthread.lock);
-        const uint32_t num_peers = conferences[self->num].num_peers;
-        const bool audio = conferences[self->num].audio_enabled;
+        const uint32_t num_peers = chat->num_peers;
+        const bool audio = chat->audio_enabled;
         const int header_lines = sidebar_offset(self->num);
         pthread_mutex_unlock(&Winthread.lock);
 
@@ -953,32 +986,41 @@ static void conference_onDraw(ToxWindow *self, Tox *m)
         if (audio) {
 #ifdef AUDIO
             pthread_mutex_lock(&Winthread.lock);
-            const bool mic_on = !device_is_muted(input, conferences[self->num].audio_in_idx);
+            conference_check_push_to_talk(chat);
+            const bool mic_on = !device_is_muted(input, chat->audio_in_idx);
             const float volume = get_input_volume();
-            const float threshold = device_get_VAD_threshold(conferences[self->num].audio_in_idx);
+            const float threshold = device_get_VAD_threshold(chat->audio_in_idx);
             pthread_mutex_unlock(&Winthread.lock);
 
             wmove(ctx->sidebar, line, 1);
             wattron(ctx->sidebar, A_BOLD);
             wprintw(ctx->sidebar, "Mic: ");
-            const int color = mic_on && volume > threshold ? GREEN : RED;
-            wattron(ctx->sidebar, COLOR_PAIR(color));
 
-            if (mic_on) {
+            if (!mic_on) {
+                wattron(ctx->sidebar, COLOR_PAIR(RED));
+                wprintw(ctx->sidebar, "OFF");
+                wattroff(ctx->sidebar, COLOR_PAIR(RED));
+            } else if (chat->push_to_talk_enabled && !chat->push_to_talk_active)  {
+                wattron(ctx->sidebar, COLOR_PAIR(GREEN));
+                wprintw(ctx->sidebar, "PTT");
+                wattroff(ctx->sidebar, COLOR_PAIR(GREEN));
+            } else {
+                const int color = volume > threshold ? GREEN : RED;
+                wattron(ctx->sidebar, COLOR_PAIR(color));
+
                 float v = volume;
 
                 while (v > 0.0f) {
                     wprintw(ctx->sidebar, v > 10.0f ? (v > 15.0f ? "*" : "+") : (v > 5.0f ? "-" : "."));
                     v -= 20.0f;
                 }
-            } else {
-                wprintw(ctx->sidebar, "OFF");
+
+                wattroff(ctx->sidebar, COLOR_PAIR(color));
             }
 
-            wattroff(ctx->sidebar, COLOR_PAIR(color));
             wattroff(ctx->sidebar, A_BOLD);
             ++line;
-#endif
+#endif  // AUDIO
         }
 
         wmove(ctx->sidebar, line, 1);
@@ -991,9 +1033,7 @@ static void conference_onDraw(ToxWindow *self, Tox *m)
         mvwhline(ctx->sidebar, line, 1, ACS_HLINE, SIDEBAR_WIDTH - 1);
         ++line;
 
-        for (uint32_t i = 0;
-                i < num_peers && i < y2 - header_lines - CHATBOX_HEIGHT;
-                ++i) {
+        for (uint32_t i = 0; i < num_peers && i < y2 - header_lines - CHATBOX_HEIGHT; ++i) {
             wmove(ctx->sidebar, i + header_lines, 1);
             draw_peer(self, m, ctx, i);
         }
@@ -1131,7 +1171,13 @@ static void conference_read_device_callback(const int16_t *captured, uint32_t si
 
     AudioInputCallbackData *audio_input_callback_data = (AudioInputCallbackData *)data;
 
-    conferences[audio_input_callback_data->conferencenum].last_sent_audio = get_unix_time();
+    ConferenceChat *chat = &conferences[audio_input_callback_data->conferencenum];
+
+    if (!conference_check_push_to_talk(chat)) {
+        return;
+    }
+
+    chat->last_sent_audio = get_unix_time();
 
     toxav_group_send_audio(audio_input_callback_data->tox,
                            audio_input_callback_data->conferencenum,
@@ -1158,6 +1204,19 @@ bool init_conference_audio_input(Tox *tox, uint32_t conferencenum)
     chat->audio_enabled = success;
 
     return success;
+}
+
+bool toggle_conference_push_to_talk(uint32_t conferencenum, bool enabled)
+{
+    ConferenceChat *chat = &conferences[conferencenum];
+
+    if (!chat->active) {
+        return false;
+    }
+
+    chat->push_to_talk_enabled = enabled;
+
+    return true;
 }
 
 bool enable_conference_audio(Tox *tox, uint32_t conferencenum)
@@ -1244,4 +1303,4 @@ float conference_get_VAD_threshold(uint32_t conferencenum)
 
     return device_get_VAD_threshold(chat->audio_in_idx);
 }
-#endif
+#endif  // AUDIO
