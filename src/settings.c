@@ -523,7 +523,7 @@ int settings_load(struct user_settings *s, const char *patharg)
         config_setting_lookup_int(setting, audio_strings.chat_audio_channels, &s->chat_audio_channels);
         s->chat_audio_channels = s->chat_audio_channels <= 0 || s->chat_audio_channels > 2 ? 2 : s->chat_audio_channels;
 
-	config_setting_lookup_bool(setting, audio_strings.push_to_talk, &s->push_to_talk);
+        config_setting_lookup_bool(setting, audio_strings.push_to_talk, &s->push_to_talk);
     }
 
 #endif
