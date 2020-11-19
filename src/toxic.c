@@ -1372,12 +1372,20 @@ int main(int argc, char **argv)
 
     parse_args(argc, argv);
 
-    /* Use the -b flag to enable stderr */
+#ifndef DEBUG
+
+    /* Use the -b flag or build with DEBUG_ENABLED=1 to enable stderr */
     if (!arg_opts.debug) {
         if (!freopen("/dev/null", "w", stderr)) {
             fprintf(stderr, "Warning: failed to enable stderr\n");
         }
     }
+#else
+    if (!arg_opts.debug) {
+        queue_init_message("stderr enabled (debug build)");
+    }
+
+#endif  // DEBUG
 
     if (arg_opts.encrypt_data && arg_opts.unencrypt_data) {
         arg_opts.encrypt_data = 0;
