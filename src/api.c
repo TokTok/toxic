@@ -191,7 +191,9 @@ void invoke_autoruns(WINDOW *window, ToxWindow *self)
     }
 
     struct dirent *dir = NULL;
+
     cur_window  = window;
+
     self_window = self;
 
     while ((dir = readdir(d)) != NULL) {
