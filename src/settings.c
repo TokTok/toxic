@@ -233,8 +233,6 @@ static void audio_defaults(struct user_settings *settings)
 static const struct sound_strings {
     const char *self;
     const char *notif_error;
-    const char *self_log_in;
-    const char *self_log_out;
     const char *user_log_in;
     const char *user_log_out;
     const char *call_incoming;
@@ -245,8 +243,6 @@ static const struct sound_strings {
 } sound_strings = {
     "sounds",
     "notif_error",
-    "self_log_in",
-    "self_log_out",
     "user_log_in",
     "user_log_out",
     "call_incoming",
