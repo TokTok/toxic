@@ -290,6 +290,7 @@ static void init_groupchat_log(ToxWindow *self, Tox *m, uint32_t groupnumber)
     char chat_id[TOX_GROUP_CHAT_ID_SIZE];
 
     TOX_ERR_GROUP_STATE_QUERIES err;
+
     if (!tox_group_get_chat_id(m, groupnumber, (uint8_t *)chat_id, &err)) {
         line_info_add(self, NULL, NULL, NULL, SYS_MSG, 0, 0, "Failed to fetch chat id. Logging disabled. (error: %d)", err);
         return;
