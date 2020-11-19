@@ -1380,7 +1380,9 @@ int main(int argc, char **argv)
             fprintf(stderr, "Warning: failed to enable stderr\n");
         }
     }
+
 #else
+
     if (!arg_opts.debug) {
         queue_init_message("stderr enabled (debug build)");
     }
