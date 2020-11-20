@@ -58,6 +58,7 @@ struct line_info {
     uint32_t id;
     uint16_t len;   /* combined len of entire line */
     uint8_t newlines;
+    bool show_peerlist;  /* true if conference/group is drawing the peerlist */
 
     struct line_info *prev;
     struct line_info *next;
