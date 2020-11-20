@@ -363,6 +363,7 @@ void line_info_print(ToxWindow *self)
     }
 
     struct line_info *line = hst->line_start->next;
+
     int max_x = line->show_peerlist ? MAX(x2 - SIDEBAR_WIDTH, 1) : x2;
 
     int numlines = 0;
