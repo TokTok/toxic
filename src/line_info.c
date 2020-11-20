@@ -134,6 +134,56 @@ static struct line_info *line_info_ret_queue(struct history *hst)
     return line;
 }
 
+/* Toggles the peer_list enabled variable for every line in hsitory. This allows us to
+ * always have lines word wrapped at the edge of the visible window
+ */
+void line_info_peerlist_toggle(struct history *hst, bool enabled)
+{
+    struct line_info *line = hst->line_root;
+
+    while (line) {
+        line->show_peerlist = enabled;
+        line = line->next;
+    }
+}
+
+static bool room_for_char(const char *s, size_t cur_idx, int x_limit)
+{
+    char ch;
+
+    for (size_t i = 0; (ch = s[i]); ++i) {
+        if (i >= x_limit) {
+            return false;
+        }
+
+        if (ch == ' ') {
+            return true;
+        }
+    }
+
+    return true;
+}
+
+/* Prints `s` to window, wrapping at the last word that fits on the current line. */
+static void print_word_wrap(WINDOW *win, const char *s, int max_x)
+{
+    char ch;
+
+    for (size_t i = 0; (ch = s[i]); ++i) {
+        int x;
+        int y;
+        UNUSED_VAR(y);
+
+        getyx(win, y, x);
+
+        if (room_for_char(&s[i], i, max_x - x)) {
+            wprintw(win, "%c", ch);
+        } else {
+            wprintw(win, "\n%c", ch);
+        }
+    }
+}
+
 /* creates new line_info line and puts it in the queue.
  *
  * Returns the id of the new line.
@@ -242,6 +292,7 @@ int line_info_add(ToxWindow *self, const char *timestr, const char *name1, const
     new_line->colour = colour;
     new_line->noread_flag = false;
     new_line->timestamp = get_unix_time();
+    new_line->show_peerlist = (bool) self->show_peerlist;
 
     hst->queue[hst->queue_sz++] = new_line;
 
@@ -326,6 +377,8 @@ void line_info_print(ToxWindow *self)
 
     struct line_info *line = hst->line_start->next;
 
+    int max_x = line->show_peerlist ? MAX(x2 - SIDEBAR_WIDTH, 1) : x2;
+
     int numlines = 0;
 
     while (line && numlines++ <= y2) {
@@ -366,7 +419,8 @@ void line_info_print(ToxWindow *self)
                         wattron(win, COLOR_PAIR(RED));
                     }
 
-                    wprintw(win, "%s%c", line, msg ? '\n' : '\0');
+                    print_word_wrap(win, line, max_x);
+                    wprintw(win, "%c", msg ? '\n' : '\0');
 
                     if (line[0] == '>') {
                         wattroff(win, COLOR_PAIR(GREEN));
@@ -406,7 +460,8 @@ void line_info_print(ToxWindow *self)
                 wattroff(win, COLOR_PAIR(BLUE));
 
                 wattron(win, COLOR_PAIR(YELLOW));
-                wprintw(win, "%s %s %s", user_settings->line_normal, line->name1, line->msg);
+                wprintw(win, "%s %s", user_settings->line_normal, line->name1);
+                print_word_wrap(win, line->msg, max_x);
                 wattroff(win, COLOR_PAIR(YELLOW));
 
                 if (type == OUT_ACTION && timed_out(line->timestamp, NOREAD_FLAG_TIMEOUT)) {
@@ -438,7 +493,8 @@ void line_info_print(ToxWindow *self)
                     wattron(win, COLOR_PAIR(line->colour));
                 }
 
-                wprintw(win, "%s\n", line->msg);
+                print_word_wrap(win, line->msg, max_x);
+                wprintw(win, "\n");
 
                 if (line->bold) {
                     wattroff(win, A_BOLD);
@@ -456,7 +512,7 @@ void line_info_print(ToxWindow *self)
                 wattroff(win, COLOR_PAIR(GREEN));
 
                 if (line->msg[0]) {
-                    wprintw(win, "%s", line->msg);
+                    print_word_wrap(win, line->msg, max_x);
                 }
 
                 wprintw(win, "\n");
@@ -474,7 +530,9 @@ void line_info_print(ToxWindow *self)
                 wprintw(win, "%s ", line->name1);
                 wattroff(win, A_BOLD);
 
-                wprintw(win, "%s\n", line->msg);
+                print_word_wrap(win, line->msg, max_x);
+                wprintw(win, "\n");
+
                 wattroff(win, COLOR_PAIR(line->colour));
 
                 break;
@@ -491,7 +549,9 @@ void line_info_print(ToxWindow *self)
                 wprintw(win, "%s ", line->name1);
                 wattroff(win, A_BOLD);
 
-                wprintw(win, "%s\n", line->msg);
+                print_word_wrap(win, line->msg, max_x);
+                wprintw(win, "\n");
+
                 wattroff(win, COLOR_PAIR(line->colour));
 
                 break;
@@ -507,7 +567,7 @@ void line_info_print(ToxWindow *self)
                 wprintw(win, "%s", line->name1);
                 wattroff(win, A_BOLD);
 
-                wprintw(win, "%s", line->msg);
+                print_word_wrap(win, line->msg, max_x);
 
                 wattron(win, A_BOLD);
                 wprintw(win, "%s\n", line->name2);

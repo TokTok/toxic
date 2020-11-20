@@ -336,6 +336,7 @@ bool input_handle(ToxWindow *self, wint_t key, int x, int mx_x)
         if (key == user_settings->key_toggle_peerlist) {
             if (self->type == WINDOW_TYPE_CONFERENCE) {
                 self->show_peerlist ^= 1;
+                line_info_peerlist_toggle(self->chatwin->hst, (bool) self->show_peerlist);
                 redraw_conference_win(self);
             }
 

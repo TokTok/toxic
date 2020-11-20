@@ -58,6 +58,7 @@ struct line_info {
     uint32_t id;
     uint16_t len;   /* combined len of entire line */
     uint8_t newlines;
+    bool show_peerlist;  /* true if conference/group is drawing the peerlist */
 
     struct line_info *prev;
     struct line_info *next;
@@ -99,5 +100,10 @@ void line_info_reset_start(ToxWindow *self, struct history *hst);
 
 void line_info_init(struct history *hst);
 bool line_info_onKey(ToxWindow *self, wint_t key);    /* returns true if key is a match */
+
+/* Toggles the peer_list enabled variable for every line in hsitory. This allows us to
+ * always have lines word wrapped at the edge of the visible window
+ */
+void line_info_peerlist_toggle(struct history *hst, bool enabled);
 
 #endif /* LINE_INFO_H */
