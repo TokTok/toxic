@@ -220,7 +220,9 @@ static void print_wrap(WINDOW *win, struct line_info *line, int max_x)
         }
 
         if (print_padding) {
-            for (size_t i = 0; i < x_start; ++i) { waddch(win, ' '); } // Add padding to the start of the next line
+            for (size_t i = 0; i < x_start; ++i) {
+                waddch(win, ' ');    // Add padding to the start of the next line
+            }
         }
     }
 
