@@ -193,6 +193,7 @@ static void print_wrap(WINDOW *win, struct line_info *line, int max_x)
         }
 
         int space_idx = rspace_index(msg, x_limit - 1);
+        bool print_padding = false;
 
         if (space_idx >= 1) {
             bool newline = print_n_chars(win, msg, space_idx);
@@ -208,16 +209,18 @@ static void print_wrap(WINDOW *win, struct line_info *line, int max_x)
 
                 if (win) {
                     waddch(win, '\n');
-
-                    for (size_t i = 0; i < x_start; ++i) {
-                        waddch(win, ' ');    // Add padding to the start of the next line
-                    }
+                    print_padding = true;
                 }
             }
         } else {
             print_n_chars(win, msg, x_limit);
             msg += x_limit;
             length -= x_limit;
+            print_padding = win != NULL;
+        }
+
+        if (print_padding) {
+            for (size_t i = 0; i < x_start; ++i) { waddch(win, ' '); } // Add padding to the start of the next line
         }
     }
 
