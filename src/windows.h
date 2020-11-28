@@ -178,6 +178,7 @@ struct ToxWindow {
     char name[TOXIC_MAX_NAME_LENGTH + 1];
     uint32_t num;    /* corresponds to friendnumber in chat windows */
     uint8_t index; /* This window's index in the windows array */
+    bool scroll_pause; /* true if this window is not scrolled to the bottom */
     unsigned int pending_messages;  /* # of new messages in this window since the last time it was focused */
     int x;
 

@@ -66,7 +66,7 @@ void line_info_reset_start(ToxWindow *self, struct history *hst)
     int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
     int max_y = y2 - CHATBOX_HEIGHT - WINDOW_BAR_HEIGHT - top_offst;
 
-    int curlines = 0;
+    uint16_t curlines = 0;
 
     do {
         curlines += line->format_lines;
@@ -74,6 +74,8 @@ void line_info_reset_start(ToxWindow *self, struct history *hst)
     } while (line->prev && curlines + line->format_lines <= max_y);
 
     hst->line_start = line;
+
+    self->scroll_pause = false;
 }
 
 void line_info_cleanup(struct history *hst)
@@ -424,7 +426,9 @@ static void line_info_check_queue(ToxWindow *self)
     hst->line_end = line;
     hst->line_end->id = line->id;
 
-    line_info_reset_start(self, hst);
+    if (!self->scroll_pause) {
+        line_info_reset_start(self, hst);
+    }
 }
 
 #define NOREAD_FLAG_TIMEOUT 5    /* seconds before a sent message with no read receipt is flagged as unread */
@@ -450,7 +454,7 @@ void line_info_print(ToxWindow *self)
 
     int x2;
 
-    getmaxyx(win, y2, x2);
+    getmaxyx(self->window, y2, x2);
 
     if (x2 - 1 <= SIDEBAR_WIDTH) {  // leave room on x axis for sidebar padding
         return;
@@ -465,11 +469,11 @@ void line_info_print(ToxWindow *self)
     struct line_info *line = hst->line_start->next;
 
     int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
-    const int max_y = y2 - top_offst;
+    const int max_y = y2 - top_offst - CHATBOX_HEIGHT - WINDOW_BAR_HEIGHT;
     const int max_x = self->show_peerlist ? x2 - 1 - SIDEBAR_WIDTH : x2;
-    int numlines = 0;
+    uint16_t numlines = 0;
 
-    while (line && numlines++ < max_y) {
+    while (line && numlines < max_y) {
         uint8_t type = line->type;
 
         switch (type) {
@@ -648,6 +652,7 @@ void line_info_print(ToxWindow *self)
                 break;
         }
 
+        numlines += line->format_lines;
         line = line->next;
     }
 
@@ -655,6 +660,33 @@ void line_info_print(ToxWindow *self)
     if (hst->queue_size > 0) {
         line_info_print(self);
     }
+}
+
+/*
+ * Return true if all lines starting from `line` can fit on the screen.
+ */
+static bool line_info_screen_fit(ToxWindow *self, struct line_info *line)
+{
+    int x2;
+    int y2;
+    getmaxyx(self->window, y2, x2);
+
+    UNUSED_VAR(x2);
+
+    int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+    int max_y = y2 - top_offst;
+    uint16_t lines = line->format_lines;
+
+    while (line) {
+        lines += line->format_lines;
+        line = line->next;
+
+        if (lines > max_y) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 /* puts msg in specified line_info msg buffer */
@@ -675,27 +707,37 @@ void line_info_set(ToxWindow *self, uint32_t id, char *msg)
     }
 }
 
-static void line_info_scroll_up(struct history *hst)
+static void line_info_scroll_up(ToxWindow *self, struct history *hst)
 {
     if (hst->line_start->prev) {
         hst->line_start = hst->line_start->prev;
-    } else {
-        sound_notify(NULL, notif_error, NT_ALWAYS, NULL);
+        self->scroll_pause = true;
     }
 }
 
-static void line_info_scroll_down(struct history *hst)
+static void line_info_scroll_down(ToxWindow *self, struct history *hst)
 {
+    int x2;
+    int y2;
+    getmaxyx(self->window, y2, x2);
+
+    UNUSED_VAR(x2);
+
     if (hst->line_start->next) {
-        hst->line_start = hst->line_start->next;
+        if (line_info_screen_fit(self, hst->line_start)) {
+            self->scroll_pause = false;
+        } else {
+            hst->line_start = hst->line_start->next;
+        }
     } else {
-        sound_notify(NULL, notif_error, NT_ALWAYS, NULL);
+        self->scroll_pause = false;
     }
 }
 
 static void line_info_page_up(ToxWindow *self, struct history *hst)
 {
-    int x2, y2;
+    int x2;
+    int y2;
     getmaxyx(self->window, y2, x2);
 
     UNUSED_VAR(x2);
@@ -705,6 +747,8 @@ static void line_info_page_up(ToxWindow *self, struct history *hst)
     for (size_t i = 0; i < jump_dist && hst->line_start->prev; ++i) {
         hst->line_start = hst->line_start->prev;
     }
+
+    self->scroll_pause = true;
 }
 
 static void line_info_page_down(ToxWindow *self, struct history *hst)
@@ -717,6 +761,11 @@ static void line_info_page_down(ToxWindow *self, struct history *hst)
     size_t jump_dist = y2 / 2;
 
     for (size_t i = 0; i < jump_dist && hst->line_start->next; ++i) {
+        if (line_info_screen_fit(self, hst->line_start)) {
+            self->scroll_pause = false;
+            break;
+        }
+
         hst->line_start = hst->line_start->next;
     }
 }
@@ -731,9 +780,9 @@ bool line_info_onKey(ToxWindow *self, wint_t key)
     } else if (key == user_settings->key_half_page_down) {
         line_info_page_down(self, hst);
     } else if (key == user_settings->key_scroll_line_up) {
-        line_info_scroll_up(hst);
+        line_info_scroll_up(self, hst);
     } else if (key == user_settings->key_scroll_line_down) {
-        line_info_scroll_down(hst);
+        line_info_scroll_down(self, hst);
     } else if (key == user_settings->key_page_bottom) {
         line_info_reset_start(self, hst);
     } else {
