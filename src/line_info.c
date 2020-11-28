@@ -228,6 +228,7 @@ static void print_wrap(WINDOW *win, struct line_info *line, int max_x)
         if ((x_start > 0 && x > x_start) || (x_start == 0 && x > 0)) {
             return;
         }
+
         if (length < x_limit) {
             if (print_n_chars(win, msg, length)) {
                 lines += newline_count(msg);
