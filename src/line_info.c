@@ -63,10 +63,10 @@ void line_info_reset_start(ToxWindow *self, struct history *hst)
     getmaxyx(self->window, y2, x2);
     UNUSED_VAR(x2);
 
-    int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? 2 : 0;
-    int max_y = y2 - CHATBOX_HEIGHT - top_offst;
+    int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+    int max_y = y2 - CHATBOX_HEIGHT - WINDOW_BAR_HEIGHT - top_offst;
 
-    int curlines = 0;
+    uint16_t curlines = 0;
 
     do {
         curlines += line->format_lines;
@@ -74,6 +74,8 @@ void line_info_reset_start(ToxWindow *self, struct history *hst)
     } while (line->prev && curlines + line->format_lines <= max_y);
 
     hst->line_start = line;
+
+    self->scroll_pause = false;
 }
 
 void line_info_cleanup(struct history *hst)
@@ -204,6 +206,10 @@ static unsigned int newline_count(const char *s)
  */
 static void print_wrap(WINDOW *win, struct line_info *line, int max_x)
 {
+    int x;
+    int y;
+    UNUSED_VAR(y);
+
     const char *msg = line->msg;
     uint16_t length = line->msg_len;
     uint16_t lines = 0;
@@ -216,6 +222,12 @@ static void print_wrap(WINDOW *win, struct line_info *line, int max_x)
     }
 
     while (msg) {
+        getyx(win, y, x);
+
+        // next line would print past window limit so we abort; we don't want to update format_lines
+        if ((x_start > 0 && x > x_start) || (x_start == 0 && x > 0)) {
+            return;
+        }
         if (length < x_limit) {
             if (print_n_chars(win, msg, length)) {
                 lines += newline_count(msg);
@@ -263,10 +275,6 @@ static void print_wrap(WINDOW *win, struct line_info *line, int max_x)
     }
 
     if (win && line->noread_flag) {
-        int x;
-        int y;
-        UNUSED_VAR(y);
-
         getyx(win, y, x);
 
         if (x >= max_x - 1 || x == x_start) {
@@ -281,13 +289,15 @@ static void print_wrap(WINDOW *win, struct line_info *line, int max_x)
     line->format_lines = lines;
 }
 
-static void line_info_init_line(WINDOW *win, struct line_info *line)
+static void line_info_init_line(ToxWindow *self, struct line_info *line)
 {
-    int max_y;
-    int max_x;
-    UNUSED_VAR(max_y);
+    int y2;
+    int x2;
+    UNUSED_VAR(y2);
 
-    getmaxyx(win, max_y, max_x);
+    getmaxyx(self->window, y2, x2);
+
+    int max_x = self->show_peerlist ? x2 - 1 - SIDEBAR_WIDTH : x2;
 
     print_wrap(NULL, line, max_x);
 }
@@ -358,7 +368,7 @@ int line_info_add(ToxWindow *self, const char *timestr, const char *name1, const
             break;
 
         case PROMPT:
-            ++len;
+            len += 2;
             break;
 
         default:
@@ -398,7 +408,7 @@ int line_info_add(ToxWindow *self, const char *timestr, const char *name1, const
     new_line->noread_flag = false;
     new_line->timestamp = get_unix_time();
 
-    line_info_init_line(self->chatwin->history, new_line);
+    line_info_init_line(self, new_line);
 
     hst->queue[hst->queue_size++] = new_line;
 
@@ -424,29 +434,8 @@ static void line_info_check_queue(ToxWindow *self)
     hst->line_end = line;
     hst->line_end->id = line->id;
 
-    int y;
-    int y2;
-    int x;
-    int x2;
-    getmaxyx(self->window, y2, x2);
-    getyx(self->chatwin->history, y, x);
-
-    UNUSED_VAR(x);
-
-    if (x2 <= SIDEBAR_WIDTH) {
-        return;
-    }
-
-    int lines = line->format_lines;
-    int max_y = y2 - CHATBOX_HEIGHT;
-
-    /* move line_start forward proportionate to the number of new lines */
-    if (y + lines > max_y) {
-        while (lines > 0 && hst->line_start->next) {
-            lines -= hst->line_start->next->format_lines;
-            hst->line_start = hst->line_start->next;
-            ++hst->start_id;
-        }
+    if (!self->scroll_pause) {
+        line_info_reset_start(self, hst);
     }
 }
 
@@ -482,16 +471,31 @@ void line_info_print(ToxWindow *self)
     if (self->type == WINDOW_TYPE_CONFERENCE) {
         wmove(win, 0, 0);
     } else {
-        wmove(win, 2, 0);
+        wmove(win, TOP_BAR_HEIGHT, 0);
     }
 
     struct line_info *line = hst->line_start->next;
 
+    if (!line) {
+        return;
+    }
+
+    const int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+    const int max_y = y2 - top_offst - CHATBOX_HEIGHT - WINDOW_BAR_HEIGHT;
     const int max_x = self->show_peerlist ? x2 - 1 - SIDEBAR_WIDTH : x2;
+    uint16_t numlines = line->format_lines;
 
-    int numlines = 0;
+    while (line && numlines++ <= max_y) {
+        int y;
+        int x;
+        UNUSED_VAR(y);
 
-    while (line && numlines++ <= y2) {
+        getyx(win, y, x);
+
+        if (x > 0) { // Prevnts us from printing off the screen
+            break;
+        }
+
         uint8_t type = line->type;
 
         switch (type) {
@@ -679,6 +683,38 @@ void line_info_print(ToxWindow *self)
     }
 }
 
+/*
+ * Return true if all lines starting from `line` can fit on the screen.
+ */
+static bool line_info_screen_fit(ToxWindow *self, struct line_info *line)
+{
+    if (!line) {
+        return true;
+    }
+
+    int x2;
+    int y2;
+    getmaxyx(self->chatwin->history, y2, x2);
+
+    UNUSED_VAR(x2);
+
+    const int top_offset = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+    const int max_y = y2 - top_offset;
+
+    uint16_t lines = line->format_lines;
+
+    while (line) {
+        if (lines > max_y) {
+            return false;
+        }
+
+        lines += line->format_lines;
+        line = line->next;
+    }
+
+    return true;
+}
+
 /* puts msg in specified line_info msg buffer */
 void line_info_set(ToxWindow *self, uint32_t id, char *msg)
 {
@@ -697,49 +733,74 @@ void line_info_set(ToxWindow *self, uint32_t id, char *msg)
     }
 }
 
-static void line_info_scroll_up(struct history *hst)
+static void line_info_scroll_up(ToxWindow *self, struct history *hst)
 {
     if (hst->line_start->prev) {
         hst->line_start = hst->line_start->prev;
-    } else {
-        sound_notify(NULL, notif_error, NT_ALWAYS, NULL);
+        self->scroll_pause = true;
     }
 }
 
-static void line_info_scroll_down(struct history *hst)
+static void line_info_scroll_down(ToxWindow *self, struct history *hst)
 {
-    if (hst->line_start->next) {
-        hst->line_start = hst->line_start->next;
+    struct line_info *next = hst->line_start->next;
+
+    if (next && self->scroll_pause) {
+        if (line_info_screen_fit(self, next->next)) {
+            line_info_reset_start(self, hst);
+        } else {
+            hst->line_start = next;
+        }
     } else {
-        sound_notify(NULL, notif_error, NT_ALWAYS, NULL);
+        line_info_reset_start(self, hst);
     }
 }
 
 static void line_info_page_up(ToxWindow *self, struct history *hst)
 {
-    int x2, y2;
+    int x2;
+    int y2;
     getmaxyx(self->window, y2, x2);
 
     UNUSED_VAR(x2);
 
-    size_t jump_dist = y2 / 2;
+    const int top_offset = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+    const int max_y = y2 - top_offset;
+    size_t jump_dist = max_y / 2;
 
     for (size_t i = 0; i < jump_dist && hst->line_start->prev; ++i) {
         hst->line_start = hst->line_start->prev;
     }
+
+    self->scroll_pause = true;
 }
 
 static void line_info_page_down(ToxWindow *self, struct history *hst)
 {
-    int x2, y2;
-    getmaxyx(self->window, y2, x2);
+    if (!self->scroll_pause) {
+        return;
+    }
+
+    int x2;
+    int y2;
+    getmaxyx(self->chatwin->history, y2, x2);
 
     UNUSED_VAR(x2);
 
-    size_t jump_dist = y2 / 2;
+    const int top_offset = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+    const int max_y = y2 - top_offset;
+    size_t jump_dist = max_y / 2;
 
-    for (size_t i = 0; i < jump_dist && hst->line_start->next; ++i) {
-        hst->line_start = hst->line_start->next;
+    struct line_info *next = hst->line_start->next;
+
+    for (size_t i = 0; i < jump_dist && next; ++i) {
+        if (line_info_screen_fit(self, next->next)) {
+            line_info_reset_start(self, hst);
+            break;
+        }
+
+        hst->line_start = next;
+        next = hst->line_start->next;
     }
 }
 
@@ -753,9 +814,9 @@ bool line_info_onKey(ToxWindow *self, wint_t key)
     } else if (key == user_settings->key_half_page_down) {
         line_info_page_down(self, hst);
     } else if (key == user_settings->key_scroll_line_up) {
-        line_info_scroll_up(hst);
+        line_info_scroll_up(self, hst);
     } else if (key == user_settings->key_scroll_line_down) {
-        line_info_scroll_down(hst);
+        line_info_scroll_down(self, hst);
     } else if (key == user_settings->key_page_bottom) {
         line_info_reset_start(self, hst);
     } else {
