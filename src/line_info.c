@@ -469,8 +469,11 @@ void line_info_print(ToxWindow *self)
     struct line_info *line = hst->line_start->next;
 
     int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+
     const int max_y = y2 - top_offst - CHATBOX_HEIGHT - WINDOW_BAR_HEIGHT;
+
     const int max_x = self->show_peerlist ? x2 - 1 - SIDEBAR_WIDTH : x2;
+
     uint16_t numlines = 0;
 
     while (line && numlines < max_y) {

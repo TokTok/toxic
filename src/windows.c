@@ -691,7 +691,7 @@ void draw_active_window(Tox *m)
     a->pending_messages = 0;
     pthread_mutex_unlock(&Winthread.lock);
 
-   // draw_bar();
+    // draw_bar();
 
     touchwin(a->window);
     a->onDraw(a, m);
