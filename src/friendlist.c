@@ -1022,7 +1022,7 @@ static void blocklist_onDraw(ToxWindow *self, Tox *m, int y2, int x2)
         wmove(self->window, y2 - 1, 1);
 
         wattron(self->window, A_BOLD);
-        wprintw(self->window, "Key: ");
+        wprintw(self->window, "Public key: ");
         wattroff(self->window, A_BOLD);
 
         int i;
@@ -1247,7 +1247,7 @@ static void friendlist_onDraw(ToxWindow *self, Tox *m)
         wmove(self->window, y2 - 1, 1);
 
         wattron(self->window, A_BOLD);
-        wprintw(self->window, "Key: ");
+        wprintw(self->window, "Public key: ");
         wattroff(self->window, A_BOLD);
 
         int i;
@@ -1257,12 +1257,29 @@ static void friendlist_onDraw(ToxWindow *self, Tox *m)
         }
     }
 
+    draw_window_bar(self->window_bar);
+
     wnoutrefresh(self->window);
     draw_del_popup();
 
     if (self->help->active) {
         help_onDraw(self);
     }
+}
+
+void friendlist_onInit(ToxWindow *self, Tox *m)
+{
+    UNUSED_VAR(m);
+
+    int x2;
+    int y2;
+    getmaxyx(self->window, y2, x2);
+
+    if (y2 <= 0 || x2 <= 0) {
+        exit_toxic_err("failed in chat_onInit", FATALERR_CURSES);
+    }
+
+    self->window_bar = subwin(self->window, WINDOW_BAR_HEIGHT, x2, y2 - 2, 0);
 }
 
 void disable_chatwin(uint32_t f_num)
@@ -1343,6 +1360,7 @@ ToxWindow *new_friendlist(void)
 
     ret->type = WINDOW_TYPE_FRIEND_LIST;
 
+    ret->onInit = &friendlist_onInit;
     ret->onKey = &friendlist_onKey;
     ret->onDraw = &friendlist_onDraw;
     ret->onFriendAdded = &friendlist_onFriendAdded;

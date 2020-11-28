@@ -63,8 +63,8 @@ void line_info_reset_start(ToxWindow *self, struct history *hst)
     getmaxyx(self->window, y2, x2);
     UNUSED_VAR(x2);
 
-    int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? 2 : 0;
-    int max_y = y2 - CHATBOX_HEIGHT - top_offst;
+    int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+    int max_y = y2 - CHATBOX_HEIGHT - WINDOW_BAR_HEIGHT - top_offst;
 
     int curlines = 0;
 
@@ -358,7 +358,7 @@ int line_info_add(ToxWindow *self, const char *timestr, const char *name1, const
             break;
 
         case PROMPT:
-            ++len;
+            len += 2;
             break;
 
         default:
@@ -424,30 +424,7 @@ static void line_info_check_queue(ToxWindow *self)
     hst->line_end = line;
     hst->line_end->id = line->id;
 
-    int y;
-    int y2;
-    int x;
-    int x2;
-    getmaxyx(self->window, y2, x2);
-    getyx(self->chatwin->history, y, x);
-
-    UNUSED_VAR(x);
-
-    if (x2 <= SIDEBAR_WIDTH) {
-        return;
-    }
-
-    int lines = line->format_lines;
-    int max_y = y2 - CHATBOX_HEIGHT;
-
-    /* move line_start forward proportionate to the number of new lines */
-    if (y + lines > max_y) {
-        while (lines > 0 && hst->line_start->next) {
-            lines -= hst->line_start->next->format_lines;
-            hst->line_start = hst->line_start->next;
-            ++hst->start_id;
-        }
-    }
+    line_info_reset_start(self, hst);
 }
 
 #define NOREAD_FLAG_TIMEOUT 5    /* seconds before a sent message with no read receipt is flagged as unread */
@@ -473,7 +450,7 @@ void line_info_print(ToxWindow *self)
 
     int x2;
 
-    getmaxyx(self->window, y2, x2);
+    getmaxyx(win, y2, x2);
 
     if (x2 - 1 <= SIDEBAR_WIDTH) {  // leave room on x axis for sidebar padding
         return;
@@ -482,16 +459,17 @@ void line_info_print(ToxWindow *self)
     if (self->type == WINDOW_TYPE_CONFERENCE) {
         wmove(win, 0, 0);
     } else {
-        wmove(win, 2, 0);
+        wmove(win, TOP_BAR_HEIGHT, 0);
     }
 
     struct line_info *line = hst->line_start->next;
 
+    int top_offst = (self->type == WINDOW_TYPE_CHAT) || (self->type == WINDOW_TYPE_PROMPT) ? TOP_BAR_HEIGHT : 0;
+    const int max_y = y2 - top_offst;
     const int max_x = self->show_peerlist ? x2 - 1 - SIDEBAR_WIDTH : x2;
-
     int numlines = 0;
 
-    while (line && numlines++ <= y2) {
+    while (line && numlines++ < max_y) {
         uint8_t type = line->type;
 
         switch (type) {
