@@ -275,62 +275,46 @@ static void init_term(void)
         if (!string_is_empty(user_settings->color_bar_bg)) {
             if (strcmp(user_settings->color_bar_bg, "black") == 0) {
                 bar_bg_color = COLOR_BLACK;
-            }
-            else if (strcmp(user_settings->color_bar_bg, "red") == 0) {
+            } else if (strcmp(user_settings->color_bar_bg, "red") == 0) {
                 bar_bg_color = COLOR_RED;
-            }
-            else if (strcmp(user_settings->color_bar_bg, "blue") == 0) {
+            } else if (strcmp(user_settings->color_bar_bg, "blue") == 0) {
                 bar_bg_color = COLOR_BLUE;
-            }
-            else if (strcmp(user_settings->color_bar_bg, "cyan") == 0) {
+            } else if (strcmp(user_settings->color_bar_bg, "cyan") == 0) {
                 bar_bg_color = COLOR_CYAN;
-            }
-            else if (strcmp(user_settings->color_bar_bg, "green") == 0) {
+            } else if (strcmp(user_settings->color_bar_bg, "green") == 0) {
                 bar_bg_color = COLOR_GREEN;
-            }
-            else if (strcmp(user_settings->color_bar_bg, "yellow") == 0) {
+            } else if (strcmp(user_settings->color_bar_bg, "yellow") == 0) {
                 bar_bg_color = COLOR_YELLOW;
-            }
-            else if (strcmp(user_settings->color_bar_bg, "magenta") == 0) {
+            } else if (strcmp(user_settings->color_bar_bg, "magenta") == 0) {
                 bar_bg_color = COLOR_MAGENTA;
-            }
-            else if (strcmp(user_settings->color_bar_bg, "white") == 0) {
+            } else if (strcmp(user_settings->color_bar_bg, "white") == 0) {
                 bar_bg_color = COLOR_WHITE;
-            }
-            else {
+            } else {
                 bar_bg_color = COLOR_BLUE;
             }
         } else {
-              bar_bg_color = COLOR_BLUE;
+            bar_bg_color = COLOR_BLUE;
         }
 
         if (!string_is_empty(user_settings->color_bar_fg)) {
             if (strcmp(user_settings->color_bar_fg, "black") == 0) {
-              bar_fg_color = COLOR_BLACK;
-            }
-            else if (strcmp(user_settings->color_bar_fg, "red") == 0) {
-              bar_fg_color = COLOR_RED;
-            }
-            else if (strcmp(user_settings->color_bar_fg, "blue") == 0) {
-              bar_fg_color = COLOR_BLUE;
-            }
-            else if (strcmp(user_settings->color_bar_fg, "cyan") == 0) {
-              bar_fg_color = COLOR_CYAN;
-            }
-            else if (strcmp(user_settings->color_bar_fg, "green") == 0) {
-              bar_fg_color = COLOR_GREEN;
-            }
-            else if (strcmp(user_settings->color_bar_fg, "yellow") == 0) {
-              bar_fg_color = COLOR_YELLOW;
-            }
-            else if (strcmp(user_settings->color_bar_fg, "magenta") == 0) {
-              bar_fg_color = COLOR_MAGENTA;
-            }
-            else if (strcmp(user_settings->color_bar_fg, "white") == 0) {
-              bar_fg_color = COLOR_WHITE;
-            }
-            else {
-              bar_fg_color = COLOR_WHITE;
+                bar_fg_color = COLOR_BLACK;
+            } else if (strcmp(user_settings->color_bar_fg, "red") == 0) {
+                bar_fg_color = COLOR_RED;
+            } else if (strcmp(user_settings->color_bar_fg, "blue") == 0) {
+                bar_fg_color = COLOR_BLUE;
+            } else if (strcmp(user_settings->color_bar_fg, "cyan") == 0) {
+                bar_fg_color = COLOR_CYAN;
+            } else if (strcmp(user_settings->color_bar_fg, "green") == 0) {
+                bar_fg_color = COLOR_GREEN;
+            } else if (strcmp(user_settings->color_bar_fg, "yellow") == 0) {
+                bar_fg_color = COLOR_YELLOW;
+            } else if (strcmp(user_settings->color_bar_fg, "magenta") == 0) {
+                bar_fg_color = COLOR_MAGENTA;
+            } else if (strcmp(user_settings->color_bar_fg, "white") == 0) {
+                bar_fg_color = COLOR_WHITE;
+            } else {
+                bar_fg_color = COLOR_WHITE;
             }
         } else {
             bar_fg_color = COLOR_WHITE;
@@ -338,31 +322,23 @@ static void init_term(void)
 
         if (!string_is_empty(user_settings->color_bar_accent)) {
             if (strcmp(user_settings->color_bar_accent, "black") == 0) {
-              bar_accent_color = COLOR_BLACK;
-            }
-            else if (strcmp(user_settings->color_bar_accent, "red") == 0) {
-              bar_accent_color = COLOR_RED;
-            }
-            else if (strcmp(user_settings->color_bar_accent, "blue") == 0) {
-              bar_accent_color = COLOR_BLUE;
-            }
-            else if (strcmp(user_settings->color_bar_accent, "cyan") == 0) {
-              bar_accent_color = COLOR_CYAN;
-            }
-            else if (strcmp(user_settings->color_bar_accent, "green") == 0) {
-              bar_accent_color = COLOR_GREEN;
-            }
-            else if (strcmp(user_settings->color_bar_accent, "yellow") == 0) {
-              bar_accent_color = COLOR_YELLOW;
-            }
-            else if (strcmp(user_settings->color_bar_accent, "magenta") == 0) {
-              bar_accent_color = COLOR_MAGENTA;
-            }
-            else if (strcmp(user_settings->color_bar_accent, "white") == 0) {
-              bar_accent_color = COLOR_WHITE;
-            }
-            else {
-              bar_accent_color = COLOR_CYAN;
+                bar_accent_color = COLOR_BLACK;
+            } else if (strcmp(user_settings->color_bar_accent, "red") == 0) {
+                bar_accent_color = COLOR_RED;
+            } else if (strcmp(user_settings->color_bar_accent, "blue") == 0) {
+                bar_accent_color = COLOR_BLUE;
+            } else if (strcmp(user_settings->color_bar_accent, "cyan") == 0) {
+                bar_accent_color = COLOR_CYAN;
+            } else if (strcmp(user_settings->color_bar_accent, "green") == 0) {
+                bar_accent_color = COLOR_GREEN;
+            } else if (strcmp(user_settings->color_bar_accent, "yellow") == 0) {
+                bar_accent_color = COLOR_YELLOW;
+            } else if (strcmp(user_settings->color_bar_accent, "magenta") == 0) {
+                bar_accent_color = COLOR_MAGENTA;
+            } else if (strcmp(user_settings->color_bar_accent, "white") == 0) {
+                bar_accent_color = COLOR_WHITE;
+            } else {
+                bar_accent_color = COLOR_CYAN;
             }
         } else {
             bar_accent_color = COLOR_CYAN;
@@ -370,31 +346,23 @@ static void init_term(void)
 
         if (!string_is_empty(user_settings->color_bar_notify)) {
             if (strcmp(user_settings->color_bar_notify, "black") == 0) {
-              bar_notify_color = COLOR_BLACK;
-            }
-            else if (strcmp(user_settings->color_bar_notify, "red") == 0) {
-              bar_notify_color = COLOR_RED;
-            }
-            else if (strcmp(user_settings->color_bar_notify, "blue") == 0) {
-              bar_notify_color = COLOR_BLUE;
-            }
-            else if (strcmp(user_settings->color_bar_notify, "cyan") == 0) {
-              bar_notify_color = COLOR_CYAN;
-            }
-            else if (strcmp(user_settings->color_bar_notify, "green") == 0) {
-              bar_notify_color = COLOR_GREEN;
-            }
-            else if (strcmp(user_settings->color_bar_notify, "yellow") == 0) {
-              bar_notify_color = COLOR_YELLOW;
-            }
-            else if (strcmp(user_settings->color_bar_notify, "magenta") == 0) {
-              bar_notify_color = COLOR_MAGENTA;
-            }
-            else if (strcmp(user_settings->color_bar_notify, "white") == 0) {
-              bar_notify_color = COLOR_WHITE;
-            }
-            else {
-              bar_notify_color = COLOR_YELLOW;
+                bar_notify_color = COLOR_BLACK;
+            } else if (strcmp(user_settings->color_bar_notify, "red") == 0) {
+                bar_notify_color = COLOR_RED;
+            } else if (strcmp(user_settings->color_bar_notify, "blue") == 0) {
+                bar_notify_color = COLOR_BLUE;
+            } else if (strcmp(user_settings->color_bar_notify, "cyan") == 0) {
+                bar_notify_color = COLOR_CYAN;
+            } else if (strcmp(user_settings->color_bar_notify, "green") == 0) {
+                bar_notify_color = COLOR_GREEN;
+            } else if (strcmp(user_settings->color_bar_notify, "yellow") == 0) {
+                bar_notify_color = COLOR_YELLOW;
+            } else if (strcmp(user_settings->color_bar_notify, "magenta") == 0) {
+                bar_notify_color = COLOR_MAGENTA;
+            } else if (strcmp(user_settings->color_bar_notify, "white") == 0) {
+                bar_notify_color = COLOR_WHITE;
+            } else {
+                bar_notify_color = COLOR_YELLOW;
             }
         } else {
             bar_notify_color = COLOR_YELLOW;
