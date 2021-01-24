@@ -239,11 +239,6 @@ static int print_wrap(WINDOW *win, struct line_info *line, int max_x, int max_y)
     while (msg) {
         getyx(win, y, x);
 
-        // next line would print past window limit so we abort; we don't want to update format_lines
-        if (x > x_start) {
-            return -1;
-        }
-
         if (length < x_limit) {
             int p_ret = print_n_chars(win, msg, length, max_y);
 
