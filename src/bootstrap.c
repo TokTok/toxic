@@ -44,7 +44,7 @@ extern struct user_settings *user_settings;
 extern struct Winthread Winthread;
 
 /* URL that we get the JSON encoded nodes list from. */
-#define NODES_LIST_URL "https://digcoin.network/random/NGC-bootstrap-nodes.json"
+#define NODES_LIST_URL 0  // This should be empty until NGC merges with mainnet
 
 #define DEFAULT_NODES_FILENAME "DHTnodes.json"
 
@@ -279,6 +279,11 @@ on_exit:
  */
 static int update_DHT_nodeslist(const char *nodes_path)
 {
+    if (NODES_LIST_URL == 0) {  // TODO: Remove this when NGC merges with mainnet
+        fprintf(stderr, "Skipping DHT Nodes list fetching\n");
+        return 0;
+    }
+
     if (!nodeslist_needs_update(nodes_path)) {
         return 0;
     }
