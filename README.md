@@ -24,4 +24,3 @@ you can attempt to correct it by running `sudo ldconfig`. If that doesn't work, 
 echo '/usr/local/lib/' | sudo tee -a /etc/ld.so.conf.d/locallib.conf
 sudo ldconfig
 ```
-
