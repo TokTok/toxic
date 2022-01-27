@@ -167,6 +167,7 @@ static int print_n_chars(WINDOW *win, const wchar_t *s, size_t n, int max_y)
             waddnwstr(win, &ch, 1);
 #else
             char b;
+
             if (wcstombs(&b, &ch, sizeof(char)) != 1) {
                 continue;
             }
