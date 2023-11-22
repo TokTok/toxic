@@ -764,15 +764,19 @@ static void snake_naive_ai(GameData *game, SnakeState *state)
         case NORTH:
             snake_set_key_press(state, KEY_UP);
             break;
+
         case SOUTH:
             snake_set_key_press(state, KEY_DOWN);
             break;
+
         case EAST:
             snake_set_key_press(state, KEY_RIGHT);
             break;
+
         case WEST:
             snake_set_key_press(state, KEY_LEFT);
             break;
+
         default:
             break;
     }
@@ -1538,7 +1542,8 @@ static bool snake_handle_invite_response(const GameData *game, SnakeState *state
     return true;
 }
 
-static void snake_handle_abort_packet(GameData *game, SnakeState *state) {
+static void snake_handle_abort_packet(GameData *game, SnakeState *state)
+{
     snake_game_over(state, state->other_snake, state->other_snake_length);
     game_set_status(game, GS_Finished);
     game_set_winner(game, true);
