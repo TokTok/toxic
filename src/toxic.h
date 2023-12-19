@@ -43,6 +43,7 @@
 #include <curses.h>
 
 #include <tox/tox.h>
+#include <tox/tox_private.h>
 
 #define UNKNOWN_NAME "Anonymous"
 #define DEFAULT_TOX_NAME "Tox User"   /* should always be the same as toxcore's default name */
