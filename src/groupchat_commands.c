@@ -946,6 +946,7 @@ void cmd_whois(WINDOW *window, ToxWindow *self, Tox *m, int argc, char (*argv)[M
                 ip_addr[ip_addr_len] = '\0';
             }
         }
+
 #endif  // TOX_EXPERIMENTAL
 
         line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Public key: %s", pk_string);
