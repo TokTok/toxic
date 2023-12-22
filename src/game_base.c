@@ -922,7 +922,7 @@ static ToxWindow *game_new_window(Tox *m, GameType type, uint32_t friendnumber)
         snprintf(buf, sizeof(buf), "%s (%s)", window_name, nick);
 
         const size_t name_size = sizeof(ret->name);
-        buf[name_size-1] = '\0';
+        buf[name_size - 1] = '\0';
 
         snprintf(ret->name, name_size, "%s", buf);
     } else {
