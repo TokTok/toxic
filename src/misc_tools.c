@@ -280,7 +280,7 @@ int mbs_to_wcs_buf(wchar_t *buf, const char *string, size_t n)
         return -1;
     }
 
-    return len;
+    return (int)len;
 }
 
 /* converts wide character string into a multibyte string and puts in buf. */
@@ -296,7 +296,7 @@ int wcs_to_mbs_buf(char *buf, const wchar_t *string, size_t n)
         return -1;
     }
 
-    return len;
+    return (int)len;
 }
 
 /* case-insensitive string compare function for use with qsort */
