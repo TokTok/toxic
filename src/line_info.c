@@ -349,11 +349,11 @@ static int print_wrap(WINDOW *win, struct line_info *line, int max_x, int max_y)
  */
 static uint16_t line_info_add_msg(wchar_t *buf, size_t buf_size, const char *msg)
 {
-    if (msg == NULL || msg[0] == '\0') {
+    if (msg == NULL || msg[0] == '\0' || buf_size < sizeof(wchar_t)) {
         return 0;
     }
 
-    const wint_t wc_msg_len = mbs_to_wcs_buf(buf, msg, buf_size);
+    const int wc_msg_len = mbs_to_wcs_buf(buf, msg, buf_size / sizeof(wchar_t));
 
     if (wc_msg_len > 0 && wc_msg_len < buf_size) {
         buf[wc_msg_len] = L'\0';
