@@ -1,7 +1,7 @@
 /*  toxic.c
  *
  *
- *  Copyright (C) 2014 Toxic All Rights Reserved.
+ *  Copyright (C) 2023 Toxic All Rights Reserved.
  *
  *  This file is part of Toxic.
  *
@@ -106,6 +106,10 @@ struct arg_opts arg_opts;
 #ifdef AUDIO
 static struct av_thread av_thread;
 #endif
+
+typedef struct Toxic {
+    Tox *tox;
+} Toxic;
 
 // This struct is not thread safe. It should only ever be written to from the main thread
 // before any other thread that uses it is initialized.
@@ -1093,7 +1097,7 @@ static Tox *load_toxic(char *data_path)
     Tox_Err_Options_New options_new_err;
     struct Tox_Options *tox_opts = tox_options_new(&options_new_err);
 
-    if (!tox_opts) {
+    if (tox_opts == NULL) {
         exit_toxic_err("tox_options_new returned fatal error", options_new_err);
     }
 
@@ -1108,8 +1112,8 @@ static Tox *load_toxic(char *data_path)
         m = load_tox(data_path, tox_opts, &new_err);
     }
 
-    if (!m) {
-        exit_toxic_err("tox_new returned fatal error", new_err);
+    if (m == NULL) {
+        return NULL;
     }
 
     if (new_err != TOX_ERR_NEW_OK) {
@@ -1128,7 +1132,7 @@ static Tox *load_toxic(char *data_path)
     return m;
 }
 
-static void do_toxic(Tox *m)
+static void do_toxic(Toxic *toxic)
 {
     pthread_mutex_lock(&Winthread.lock);
 
@@ -1137,8 +1141,8 @@ static void do_toxic(Tox *m)
         return;
     }
 
-    tox_iterate(m, NULL);
-    do_tox_connection(m);
+    tox_iterate(toxic->tox, toxic);
+    do_tox_connection(toxic->tox);
 
     pthread_mutex_unlock(&Winthread.lock);
 }
@@ -1573,6 +1577,19 @@ static void init_default_data_files(void)
     free(user_config_dir);
 }
 
+static Toxic *toxic_init(Tox *tox)
+{
+    Toxic *toxic = calloc(1, sizeof(Toxic));
+
+    if (toxic == NULL) {
+        return NULL;
+    }
+
+    toxic->tox = tox;
+
+    return toxic;
+}
+
 int main(int argc, char **argv)
 {
     /* Make sure all written files are read/writeable only by the current user. */
@@ -1619,8 +1636,8 @@ int main(int argc, char **argv)
         queue_init_message("Failed to load user settings");
     }
 
-    int curl_init = curl_global_init(CURL_GLOBAL_ALL);
-    int nameserver_ret = name_lookup_init(curl_init);
+    const int curl_init = curl_global_init(CURL_GLOBAL_ALL);
+    const int nameserver_ret = name_lookup_init(curl_init);
 
     if (nameserver_ret == -1) {
         queue_init_message("curl failed to initialize; name lookup service is disabled.");
@@ -1638,7 +1655,17 @@ int main(int argc, char **argv)
 
 #endif /* X11 */
 
-    Tox *m = load_toxic(DATA_FILE);
+    Tox *tox = load_toxic(DATA_FILE);
+
+    if (tox == NULL) {
+        exit_toxic_err("Failed in main", FATALERR_TOX_INIT);
+    }
+
+    Toxic *toxic = toxic_init(tox);
+
+    if (toxic == NULL) {
+        exit_toxic_err("failed in main", FATALERR_TOXIC_INIT);
+    }
 
     if (arg_opts.encrypt_data && !datafile_exists) {
         arg_opts.encrypt_data = 0;
@@ -1646,10 +1673,10 @@ int main(int argc, char **argv)
 
     init_term();
 
-    prompt = init_windows(m);
-    prompt_init_statusbar(prompt, m, !datafile_exists);
-    load_groups(m);
-    load_conferences(m);
+    prompt = init_windows(toxic->tox);
+    prompt_init_statusbar(prompt, toxic->tox, !datafile_exists);
+    load_groups(toxic->tox);
+    load_conferences(toxic->tox);
     set_active_window_index(0);
 
     if (pthread_mutex_init(&Winthread.lock, NULL) != 0) {
@@ -1658,15 +1685,23 @@ int main(int argc, char **argv)
 
 #ifdef AUDIO
 
-    av = init_audio(prompt, m);
+    av = init_audio(prompt, toxic->tox);
+
+    if (av == NULL) {
+        queue_init_message("Failed to init audio");
+    }
 
 #ifdef VIDEO
-    init_video(prompt, m);
+    init_video(prompt, toxic->tox);
+
+    if (av == NULL) {
+        queue_init_message("Failed to init video");
+    }
 
 #endif /* VIDEO */
 
     /* AV thread */
-    if (pthread_create(&av_thread.tid, NULL, thread_av, (void *) av) != 0) {
+    if (pthread_create(&av_thread.tid, NULL, thread_av, (void *)av) != 0) {
         exit_toxic_err("failed in main", FATALERR_THREAD_CREATE);
     }
 
@@ -1681,19 +1716,19 @@ int main(int argc, char **argv)
 
 #endif /* AUDIO */
 
-    /* thread for ncurses stuff */
-    if (pthread_create(&Winthread.tid, NULL, thread_winref, (void *) m) != 0) {
+    /* thread for ncurses UI */
+    if (pthread_create(&Winthread.tid, NULL, thread_winref, (void *)toxic->tox) != 0) {
         exit_toxic_err("failed in main", FATALERR_THREAD_CREATE);
     }
 
     /* thread for message queue */
-    if (pthread_create(&cqueue_thread.tid, NULL, thread_cqueue, (void *) m) != 0) {
+    if (pthread_create(&cqueue_thread.tid, NULL, thread_cqueue, (void *)toxic->tox) != 0) {
         exit_toxic_err("failed in main", FATALERR_THREAD_CREATE);
     }
 
 #ifdef PYTHON
 
-    init_python(m);
+    init_python(toxic->tox);
     invoke_autoruns(prompt->chatwin->history, prompt);
 
 #endif /* PYTHON */
@@ -1701,11 +1736,11 @@ int main(int argc, char **argv)
     init_notify(60, user_settings->notification_timeout);
 
     /* screen/tmux auto-away timer */
-    if (init_mplex_away_timer(m) == -1) {
+    if (init_mplex_away_timer(toxic->tox) == -1) {
         queue_init_message("Failed to init mplex auto-away.");
     }
 
-    int nodeslist_ret = load_DHT_nodeslist();
+    const int nodeslist_ret = load_DHT_nodeslist();
 
     if (nodeslist_ret != 0) {
         queue_init_message("DHT nodeslist failed to load (error %d)", nodeslist_ret);
@@ -1721,19 +1756,19 @@ int main(int argc, char **argv)
     /* set user avatar from config file. if no path is supplied tox_unset_avatar is called */
     char avatarstr[PATH_MAX + 11];
     snprintf(avatarstr, sizeof(avatarstr), "/avatar %s", user_settings->avatar_path);
-    execute(prompt->chatwin->history, prompt, m, avatarstr, GLOBAL_COMMAND_MODE);
+    execute(prompt->chatwin->history, prompt, toxic->tox, avatarstr, GLOBAL_COMMAND_MODE);
 
     time_t last_save = get_unix_time();
 
     while (true) {
-        do_toxic(m);
+        do_toxic(toxic);
 
-        time_t cur_time = get_unix_time();
+        const time_t cur_time = get_unix_time();
 
         if (user_settings->autosave_freq > 0 && timed_out(last_save, user_settings->autosave_freq)) {
             pthread_mutex_lock(&Winthread.lock);
 
-            if (store_data(m, DATA_FILE) != 0) {
+            if (store_data(toxic->tox, DATA_FILE) != 0) {
                 line_info_add(prompt, false, NULL, NULL, SYS_MSG, 0, RED, "WARNING: Failed to save to data file");
             }
 
@@ -1742,7 +1777,7 @@ int main(int argc, char **argv)
             last_save = cur_time;
         }
 
-        long int sleep_duration = tox_iteration_interval(m) * 1000;
+        const long int sleep_duration = tox_iteration_interval(toxic->tox) * 1000;
         sleep_thread(sleep_duration);
     }
 

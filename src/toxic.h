@@ -1,7 +1,7 @@
 /*  toxic.h
  *
  *
- *  Copyright (C) 2014 Toxic All Rights Reserved.
+ *  Copyright (C) 2023 Toxic All Rights Reserved.
  *
  *  This file is part of Toxic.
  *
@@ -103,7 +103,8 @@ typedef enum _FATAL_ERRS {
     FATALERR_PROXY = -10,           /* Tox network failed to init using a proxy */
     FATALERR_ENCRYPT = -11,         /* Data file encryption failure */
     FATALERR_TOX_INIT = -12,        /* Tox instance failed to initialize */
-    FATALERR_CURSES = -13,          /* Unrecoverable Ncurses error */
+    FATALERR_TOXIC_INIT = -13,      /* Toxic instance failed to initialize */
+    FATALERR_CURSES = -14,          /* Unrecoverable Ncurses error */
 } FATAL_ERRS;
 
 /* Fixes text color problem on some terminals.
