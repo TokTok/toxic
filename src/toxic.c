@@ -1,7 +1,7 @@
 /*  toxic.c
  *
  *
- *  Copyright (C) 2023 Toxic All Rights Reserved.
+ *  Copyright (C) 2024 Toxic All Rights Reserved.
  *
  *  This file is part of Toxic.
  *
@@ -181,9 +181,9 @@ void free_global_data(void)
     }
 }
 
-void exit_toxic_success(Tox *m)
+void exit_toxic_success(Tox *tox)
 {
-    store_data(m, DATA_FILE);
+    store_data(tox, DATA_FILE);
 
     user_password = (struct user_password) {
         0
@@ -191,8 +191,8 @@ void exit_toxic_success(Tox *m)
 
     terminate_notify();
 
-    kill_all_file_transfers(m);
-    kill_all_windows(m);
+    kill_all_file_transfers(tox);
+    kill_all_windows(tox);
 
 #ifdef AUDIO
 #ifdef VIDEO
@@ -206,7 +206,7 @@ void exit_toxic_success(Tox *m)
 #endif /* PYTHON */
 
     free_global_data();
-    tox_kill(m);
+    tox_kill(tox);
 
     if (arg_opts.log_fp != NULL) {
         fclose(arg_opts.log_fp);
@@ -257,10 +257,10 @@ static const char *tox_log_level_show(Tox_Log_Level level)
     return "<invalid>";
 }
 
-void cb_toxcore_logger(Tox *m, TOX_LOG_LEVEL level, const char *file, uint32_t line, const char *func,
+void cb_toxcore_logger(Tox *tox, TOX_LOG_LEVEL level, const char *file, uint32_t line, const char *func,
                        const char *message, void *user_data)
 {
-    UNUSED_VAR(m);
+    UNUSED_VAR(tox);
 
     FILE *fp = (FILE *)user_data;
 
@@ -502,31 +502,31 @@ static void print_init_messages(ToxWindow *toxwin)
     }
 }
 
-static void load_friendlist(Tox *m)
+static void load_friendlist(Tox *tox)
 {
-    size_t numfriends = tox_self_get_friend_list_size(m);
+    size_t numfriends = tox_self_get_friend_list_size(tox);
 
     for (size_t i = 0; i < numfriends; ++i) {
-        friendlist_onFriendAdded(NULL, m, i, false);
+        friendlist_onFriendAdded(NULL, tox, i, false);
     }
 
     sort_friendlist_index();
 }
 
-static void load_groups(Tox *m)
+static void load_groups(Tox *tox)
 {
-    size_t numgroups = tox_group_get_number_groups(m);
+    size_t numgroups = tox_group_get_number_groups(tox);
 
     for (size_t i = 0; i < numgroups; ++i) {
-        if (init_groupchat_win(m, i, NULL, 0, Group_Join_Type_Load) != 0) {
-            tox_group_leave(m, i, NULL, 0, NULL);
+        if (init_groupchat_win(tox, i, NULL, 0, Group_Join_Type_Load) != 0) {
+            tox_group_leave(tox, i, NULL, 0, NULL);
         }
     }
 }
 
-static void load_conferences(Tox *m)
+static void load_conferences(Tox *tox)
 {
-    size_t num_chats = tox_conference_get_chatlist_size(m);
+    size_t num_chats = tox_conference_get_chatlist_size(tox);
 
     if (num_chats == 0) {
         return;
@@ -539,32 +539,32 @@ static void load_conferences(Tox *m)
         return;
     }
 
-    tox_conference_get_chatlist(m, chatlist);
+    tox_conference_get_chatlist(tox, chatlist);
 
     for (size_t i = 0; i < num_chats; ++i) {
         uint32_t conferencenum = chatlist[i];
 
         if (get_num_active_windows() >= MAX_WINDOWS_NUM) {
-            tox_conference_delete(m, conferencenum, NULL);
+            tox_conference_delete(tox, conferencenum, NULL);
             continue;
         }
 
         Tox_Err_Conference_Get_Type err;
-        Tox_Conference_Type type = tox_conference_get_type(m, conferencenum, &err);
+        Tox_Conference_Type type = tox_conference_get_type(tox, conferencenum, &err);
 
         if (err != TOX_ERR_CONFERENCE_GET_TYPE_OK) {
-            tox_conference_delete(m, conferencenum, NULL);
+            tox_conference_delete(tox, conferencenum, NULL);
             continue;
         }
 
         Tox_Err_Conference_Title t_err;
-        size_t length = tox_conference_get_title_size(m, conferencenum, &t_err);
+        size_t length = tox_conference_get_title_size(tox, conferencenum, &t_err);
         uint8_t title[MAX_STR_SIZE];
 
         if (t_err != TOX_ERR_CONFERENCE_TITLE_OK || length >= sizeof(title)) {
             length = 0;
         } else {
-            tox_conference_get_title(m, conferencenum, title, &t_err);
+            tox_conference_get_title(tox, conferencenum, title, &t_err);
 
             if (t_err != TOX_ERR_CONFERENCE_TITLE_OK) {
                 length = 0;
@@ -573,10 +573,10 @@ static void load_conferences(Tox *m)
 
         title[length] = 0;
 
-        int win_idx = init_conference_win(m, conferencenum, type, (const char *) title, length);
+        int win_idx = init_conference_win(tox, conferencenum, type, (const char *) title, length);
 
         if (win_idx == -1) {
-            tox_conference_delete(m, conferencenum, NULL);
+            tox_conference_delete(tox, conferencenum, NULL);
             continue;
         }
 
@@ -756,7 +756,7 @@ static void first_time_encrypt(const char *msg)
  * Return -1 on error.
  */
 #define TEMP_PROFILE_EXT ".tmp"
-int store_data(Tox *m, const char *path)
+int store_data(Tox *tox, const char *path)
 {
     if (path == NULL) {
         return -1;
@@ -778,7 +778,7 @@ int store_data(Tox *m, const char *path)
         return -1;
     }
 
-    size_t data_len = tox_get_savedata_size(m);
+    size_t data_len = tox_get_savedata_size(tox);
     char *data = malloc(data_len * sizeof(char));
 
     if (data == NULL) {
@@ -787,7 +787,7 @@ int store_data(Tox *m, const char *path)
         return -1;
     }
 
-    tox_get_savedata(m, (uint8_t *) data);
+    tox_get_savedata(tox, (uint8_t *) data);
 
     if (user_password.data_is_encrypted && !arg_opts.unencrypt_data) {
         size_t enc_len = data_len + TOX_PASS_ENCRYPTION_EXTRA_LENGTH;
@@ -846,43 +846,43 @@ int store_data(Tox *m, const char *path)
     return 0;
 }
 
-static void init_tox_callbacks(Tox *m)
+static void init_tox_callbacks(Tox *tox)
 {
-    tox_callback_self_connection_status(m, on_self_connection_status);
-    tox_callback_friend_connection_status(m, on_friend_connection_status);
-    tox_callback_friend_typing(m, on_friend_typing);
-    tox_callback_friend_request(m, on_friend_request);
-    tox_callback_friend_message(m, on_friend_message);
-    tox_callback_friend_name(m, on_friend_name);
-    tox_callback_friend_status(m, on_friend_status);
-    tox_callback_friend_status_message(m, on_friend_status_message);
-    tox_callback_friend_read_receipt(m, on_friend_read_receipt);
-    tox_callback_conference_invite(m, on_conference_invite);
-    tox_callback_conference_message(m, on_conference_message);
-    tox_callback_conference_peer_list_changed(m, on_conference_peer_list_changed);
-    tox_callback_conference_peer_name(m, on_conference_peer_name);
-    tox_callback_conference_title(m, on_conference_title);
-    tox_callback_file_recv(m, on_file_recv);
-    tox_callback_file_chunk_request(m, on_file_chunk_request);
-    tox_callback_file_recv_control(m, on_file_recv_control);
-    tox_callback_file_recv_chunk(m, on_file_recv_chunk);
-    tox_callback_friend_lossless_packet(m, on_lossless_custom_packet);
-    tox_callback_group_invite(m, on_group_invite);
-    tox_callback_group_message(m, on_group_message);
-    tox_callback_group_private_message(m, on_group_private_message);
-    tox_callback_group_peer_status(m, on_group_status_change);
-    tox_callback_group_peer_join(m, on_group_peer_join);
-    tox_callback_group_peer_exit(m, on_group_peer_exit);
-    tox_callback_group_peer_name(m, on_group_nick_change);
-    tox_callback_group_topic(m, on_group_topic_change);
-    tox_callback_group_peer_limit(m, on_group_peer_limit);
-    tox_callback_group_privacy_state(m, on_group_privacy_state);
-    tox_callback_group_topic_lock(m, on_group_topic_lock);
-    tox_callback_group_password(m, on_group_password);
-    tox_callback_group_self_join(m, on_group_self_join);
-    tox_callback_group_join_fail(m, on_group_rejected);
-    tox_callback_group_moderation(m, on_group_moderation);
-    tox_callback_group_voice_state(m, on_group_voice_state);
+    tox_callback_self_connection_status(tox, on_self_connection_status);
+    tox_callback_friend_connection_status(tox, on_friend_connection_status);
+    tox_callback_friend_typing(tox, on_friend_typing);
+    tox_callback_friend_request(tox, on_friend_request);
+    tox_callback_friend_message(tox, on_friend_message);
+    tox_callback_friend_name(tox, on_friend_name);
+    tox_callback_friend_status(tox, on_friend_status);
+    tox_callback_friend_status_message(tox, on_friend_status_message);
+    tox_callback_friend_read_receipt(tox, on_friend_read_receipt);
+    tox_callback_conference_invite(tox, on_conference_invite);
+    tox_callback_conference_message(tox, on_conference_message);
+    tox_callback_conference_peer_list_changed(tox, on_conference_peer_list_changed);
+    tox_callback_conference_peer_name(tox, on_conference_peer_name);
+    tox_callback_conference_title(tox, on_conference_title);
+    tox_callback_file_recv(tox, on_file_recv);
+    tox_callback_file_chunk_request(tox, on_file_chunk_request);
+    tox_callback_file_recv_control(tox, on_file_recv_control);
+    tox_callback_file_recv_chunk(tox, on_file_recv_chunk);
+    tox_callback_friend_lossless_packet(tox, on_lossless_custom_packet);
+    tox_callback_group_invite(tox, on_group_invite);
+    tox_callback_group_message(tox, on_group_message);
+    tox_callback_group_private_message(tox, on_group_private_message);
+    tox_callback_group_peer_status(tox, on_group_status_change);
+    tox_callback_group_peer_join(tox, on_group_peer_join);
+    tox_callback_group_peer_exit(tox, on_group_peer_exit);
+    tox_callback_group_peer_name(tox, on_group_nick_change);
+    tox_callback_group_topic(tox, on_group_topic_change);
+    tox_callback_group_peer_limit(tox, on_group_peer_limit);
+    tox_callback_group_privacy_state(tox, on_group_privacy_state);
+    tox_callback_group_topic_lock(tox, on_group_topic_lock);
+    tox_callback_group_password(tox, on_group_password);
+    tox_callback_group_self_join(tox, on_group_self_join);
+    tox_callback_group_join_fail(tox, on_group_rejected);
+    tox_callback_group_moderation(tox, on_group_moderation);
+    tox_callback_group_voice_state(tox, on_group_voice_state);
 }
 
 static void init_tox_options(struct Tox_Options *tox_opts)
@@ -936,7 +936,7 @@ static void init_tox_options(struct Tox_Options *tox_opts)
  */
 static Tox *load_tox(char *data_path, struct Tox_Options *tox_opts, Tox_Err_New *new_err)
 {
-    Tox *m = NULL;
+    Tox *tox = NULL;
 
     FILE *fp = fopen(data_path, "rb");
 
@@ -1032,9 +1032,9 @@ static Tox *load_tox(char *data_path, struct Tox_Options *tox_opts, Tox_Err_New 
                     tox_options_set_savedata_type(tox_opts, TOX_SAVEDATA_TYPE_TOX_SAVE);
                     tox_options_set_savedata_data(tox_opts, (uint8_t *) plain, plain_len);
 
-                    m = tox_new(tox_opts, new_err);
+                    tox = tox_new(tox_opts, new_err);
 
-                    if (m == NULL) {
+                    if (tox == NULL) {
                         fclose(fp);
                         free(data);
                         free(plain);
@@ -1060,9 +1060,9 @@ static Tox *load_tox(char *data_path, struct Tox_Options *tox_opts, Tox_Err_New 
             tox_options_set_savedata_type(tox_opts, TOX_SAVEDATA_TYPE_TOX_SAVE);
             tox_options_set_savedata_data(tox_opts, (uint8_t *) data, len);
 
-            m = tox_new(tox_opts, new_err);
+            tox = tox_new(tox_opts, new_err);
 
-            if (m == NULL) {
+            if (tox == NULL) {
                 fclose(fp);
                 free(data);
                 return NULL;
@@ -1078,18 +1078,18 @@ static Tox *load_tox(char *data_path, struct Tox_Options *tox_opts, Tox_Err_New 
 
         tox_options_set_savedata_type(tox_opts, TOX_SAVEDATA_TYPE_NONE);
 
-        m = tox_new(tox_opts, new_err);
+        tox = tox_new(tox_opts, new_err);
 
-        if (m == NULL) {
+        if (tox == NULL) {
             return NULL;
         }
 
-        if (store_data(m, data_path) == -1) {
+        if (store_data(tox, data_path) == -1) {
             exit_toxic_err("failed in load_tox", FATALERR_FILEOP);
         }
     }
 
-    return m;
+    return tox;
 }
 
 static Tox *load_toxic(char *data_path)
@@ -1104,15 +1104,15 @@ static Tox *load_toxic(char *data_path)
     init_tox_options(tox_opts);
 
     Tox_Err_New new_err;
-    Tox *m = load_tox(data_path, tox_opts, &new_err);
+    Tox *tox = load_tox(data_path, tox_opts, &new_err);
 
     if (new_err == TOX_ERR_NEW_PORT_ALLOC && tox_options_get_ipv6_enabled(tox_opts)) {
         queue_init_message("Falling back to ipv4");
         tox_options_set_ipv6_enabled(tox_opts, false);
-        m = load_tox(data_path, tox_opts, &new_err);
+        tox = load_tox(data_path, tox_opts, &new_err);
     }
 
-    if (m == NULL) {
+    if (tox == NULL) {
         return NULL;
     }
 
@@ -1120,16 +1120,16 @@ static Tox *load_toxic(char *data_path)
         queue_init_message("tox_new returned non-fatal error %d", new_err);
     }
 
-    init_tox_callbacks(m);
-    load_friendlist(m);
+    init_tox_callbacks(tox);
+    load_friendlist(tox);
     load_blocklist(BLOCK_FILE);
 
-    if (tox_self_get_name_size(m) == 0) {
-        tox_self_set_name(m, (uint8_t *) "Toxic User", strlen("Toxic User"), NULL);
+    if (tox_self_get_name_size(tox) == 0) {
+        tox_self_set_name(tox, (uint8_t *) "Toxic User", strlen("Toxic User"), NULL);
     }
 
     tox_options_free(tox_opts);
-    return m;
+    return tox;
 }
 
 static void do_toxic(Toxic *toxic)
@@ -1182,7 +1182,7 @@ static void poll_interface_refresh_flag(void)
 
 void *thread_winref(void *data)
 {
-    Tox *m = (Tox *) data;
+    Tox *tox = (Tox *) data;
 
     uint8_t draw_count = 0;
 
@@ -1190,7 +1190,7 @@ void *thread_winref(void *data)
 
     while (true) {
         draw_count++;
-        draw_active_window(m);
+        draw_active_window(tox);
 
         if (Winthread.flag_resize) {
             on_window_resize();
@@ -1202,7 +1202,7 @@ void *thread_winref(void *data)
 
         if (Winthread.sig_exit_toxic) {
             pthread_mutex_lock(&Winthread.lock);
-            exit_toxic_success(m);
+            exit_toxic_success(tox);
         }
 
         poll_interface_refresh_flag();
@@ -1211,7 +1211,7 @@ void *thread_winref(void *data)
 
 void *thread_cqueue(void *data)
 {
-    Tox *m = (Tox *) data;
+    Tox *tox = (Tox *) data;
 
     while (true) {
         pthread_mutex_lock(&Winthread.lock);
@@ -1223,7 +1223,7 @@ void *thread_cqueue(void *data)
                 cqueue_check_unread(toxwin);
 
                 if (get_friend_connection_status(toxwin->num) != TOX_CONNECTION_NONE) {
-                    cqueue_try_send(toxwin, m);
+                    cqueue_try_send(toxwin, tox);
                 }
             }
         }
