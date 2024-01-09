@@ -173,7 +173,8 @@ void on_group_topic_lock(Tox *tox, uint32_t groupnumber, Tox_Group_Topic_Lock to
 void on_group_password(Tox *tox, uint32_t groupnumber, const uint8_t *password, size_t length, void *userdata);
 void on_group_nick_change(Tox *tox, uint32_t groupnumber, uint32_t peernumber, const uint8_t *newname, size_t length,
                           void *userdata);
-void on_group_status_change(Tox *tox, uint32_t groupnumber, uint32_t peernumber, TOX_USER_STATUS status, void *userdata);
+void on_group_status_change(Tox *tox, uint32_t groupnumber, uint32_t peernumber, TOX_USER_STATUS status,
+                            void *userdata);
 void on_group_self_join(Tox *tox, uint32_t groupnumber, void *userdata);
 void on_group_rejected(Tox *tox, uint32_t groupnumber, Tox_Group_Join_Fail type, void *userdata);
 void on_group_moderation(Tox *tox, uint32_t groupnumber, uint32_t source_peernum, uint32_t target_peernum,
