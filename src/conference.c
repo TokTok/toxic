@@ -162,8 +162,14 @@ static void kill_conference_window(ToxWindow *self)
     del_window(self);
 }
 
-static void init_conference_logging(ToxWindow *self, Tox *tox, uint32_t conferencenum)
+static void init_conference_logging(ToxWindow *self, Toxic *toxic, uint32_t conferencenum)
 {
+    if (toxic == NULL || self == NULL) {
+        return;
+    }
+
+    Tox *tox = toxic->tox;
+
     ChatContext *ctx = self->chatwin;
 
     char my_id[TOX_ADDRESS_SIZE];
@@ -187,11 +193,15 @@ static void init_conference_logging(ToxWindow *self, Tox *tox, uint32_t conferen
         }
     }
 
-    execute(ctx->history, self, tox, "/log", GLOBAL_COMMAND_MODE);  // print log state to screen
+    execute(ctx->history, self, toxic, "/log", GLOBAL_COMMAND_MODE);  // print log state to screen
 }
 
-int init_conference_win(Tox *tox, uint32_t conferencenum, uint8_t type, const char *title, size_t length)
+int init_conference_win(Toxic *toxic, uint32_t conferencenum, uint8_t type, const char *title, size_t length)
 {
+    if (toxic == NULL) {
+        return -1;
+    }
+
     if (conferencenum > MAX_CONFERENCE_NUM) {
         return -1;
     }
@@ -205,7 +215,7 @@ int init_conference_win(Tox *tox, uint32_t conferencenum, uint8_t type, const ch
             // probably it so happens that this will (at least typically) be
             // the case, because toxic and tox maintain the indices in
             // parallel ways. But it isn't guaranteed by the API.
-            conferences[i].chatwin = add_window(tox, self);
+            conferences[i].chatwin = add_window(toxic, self);
             conferences[i].active = true;
             conferences[i].num_peers = 0;
             conferences[i].type = type;
@@ -221,7 +231,7 @@ int init_conference_win(Tox *tox, uint32_t conferencenum, uint8_t type, const ch
 
             conference_set_title(self, conferencenum, title, length);
 
-            init_conference_logging(self, tox, conferencenum);
+            init_conference_logging(self, toxic, conferencenum);
 
             if (i == max_conference_index) {
                 ++max_conference_index;
@@ -834,8 +844,14 @@ static int sidebar_offset(uint32_t conferencenum)
 /*
  * Return true if input is recognized by handler
  */
-static bool conference_onKey(ToxWindow *self, Tox *tox, wint_t key, bool ltr)
+static bool conference_onKey(ToxWindow *self, Toxic *toxic, wint_t key, bool ltr)
 {
+    if (toxic == NULL || self == NULL) {
+        return false;
+    }
+
+    Tox *tox = toxic->tox;
+
     ChatContext *ctx = self->chatwin;
 
     int x, y, y2, x2;
@@ -901,12 +917,12 @@ static bool conference_onKey(ToxWindow *self, Tox *tox, wint_t key, bool ltr)
                     free(complete_strs);
                 }
             } else if (wcsncmp(ctx->line, L"/avatar ", wcslen(L"/avatar ")) == 0) {
-                diff = dir_match(self, tox, ctx->line, L"/avatar");
+                diff = dir_match(self, toxic, ctx->line, L"/avatar");
             }
 
 #ifdef PYTHON
             else if (wcsncmp(ctx->line, L"/run ", wcslen(L"/run ")) == 0) {
-                diff = dir_match(self, tox, ctx->line, L"/run");
+                diff = dir_match(self, toxic, ctx->line, L"/run");
             }
 
 #endif
@@ -981,7 +997,7 @@ static bool conference_onKey(ToxWindow *self, Tox *tox, wint_t key, bool ltr)
                 } else if (strncmp(line, "/me ", strlen("/me ")) == 0) {
                     send_conference_action(self, ctx, tox, line + strlen("/me "));
                 } else {
-                    execute(ctx->history, self, tox, line, CONFERENCE_COMMAND_MODE);
+                    execute(ctx->history, self, toxic, line, CONFERENCE_COMMAND_MODE);
                 }
             } else if (line[0]) {
                 Tox_Err_Conference_Send_Message err;
@@ -1181,8 +1197,12 @@ static void conference_onDraw(ToxWindow *self, Tox *tox)
     }
 }
 
-static void conference_onInit(ToxWindow *self, Tox *tox)
+static void conference_onInit(ToxWindow *self, Toxic *toxic)
 {
+    if (self == NULL) {
+        return;
+    }
+
     int x2, y2;
     getmaxyx(self->window, y2, x2);
 

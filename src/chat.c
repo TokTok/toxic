@@ -205,16 +205,21 @@ static void recv_action_helper(ToxWindow *self, const char *action, const char *
     }
 }
 
-static void chat_onMessage(ToxWindow *self, Tox *tox, uint32_t num, Tox_Message_Type type, const char *msg, size_t len)
+static void chat_onMessage(ToxWindow *self, Toxic *toxic, uint32_t num, Tox_Message_Type type, const char *msg,
+                           size_t len)
 {
     UNUSED_VAR(len);
+
+    if (toxic == NULL || self == NULL) {
+        return;
+    }
 
     if (self->num != num) {
         return;
     }
 
     char nick[TOX_MAX_NAME_LENGTH];
-    get_nick_truncate(tox, nick, num);
+    get_nick_truncate(toxic->tox, nick, num);
 
     if (type == TOX_MESSAGE_TYPE_NORMAL) {
         recv_message_helper(self, msg, nick);
@@ -230,8 +235,14 @@ static void chat_onMessage(ToxWindow *self, Tox *tox, uint32_t num, Tox_Message_
 static void chat_pause_file_transfers(uint32_t friendnum);
 static void chat_resume_file_senders(ToxWindow *self, Tox *tox, uint32_t fnum);
 
-static void chat_onConnectionChange(ToxWindow *self, Tox *tox, uint32_t num, Tox_Connection connection_status)
+static void chat_onConnectionChange(ToxWindow *self, Toxic *toxic, uint32_t num, Tox_Connection connection_status)
 {
+    if (toxic == NULL || self == NULL) {
+        return;
+    }
+
+    Tox *tox = toxic->tox;
+
     if (self->num != num) {
         return;
     }
@@ -252,7 +263,7 @@ static void chat_onConnectionChange(ToxWindow *self, Tox *tox, uint32_t num, Tox
 
     if (prev_status == TOX_CONNECTION_NONE) {
         chat_resume_file_senders(self, tox, num);
-        file_send_queue_check(self, tox, self->num);
+        file_send_queue_check(self, toxic, self->num);
 
         msg = "has come online";
         line_info_add(self, true, nick, NULL, CONNECTION, 0, GREEN, msg);
@@ -618,12 +629,18 @@ static bool valid_file_name(const char *filename, size_t length)
     return true;
 }
 
-static void chat_onFileRecv(ToxWindow *self, Tox *tox, uint32_t friendnum, uint32_t filenumber, uint64_t file_size,
+static void chat_onFileRecv(ToxWindow *self, Toxic *toxic, uint32_t friendnum, uint32_t filenumber, uint64_t file_size,
                             const char *filename, size_t name_length)
 {
     if (self->num != friendnum) {
         return;
     }
+
+    if (toxic == NULL || self == NULL) {
+        return;
+    }
+
+    Tox *tox = toxic->tox;
 
     /* first check if we need to resume a broken transfer */
     if (chat_resume_broken_ft(self, tox, friendnum, filenumber)) {
@@ -724,17 +741,21 @@ static void chat_onFileRecv(ToxWindow *self, Tox *tox, uint32_t friendnum, uint3
 
         char cmd[MAX_STR_SIZE];
         snprintf(cmd, sizeof(cmd), "/savefile %zu", ft->index);
-        execute(self->window, self, tox, cmd, CHAT_COMMAND_MODE);
+        execute(self->window, self, toxic, cmd, CHAT_COMMAND_MODE);
     } else {
         line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0,
                       "Type '/savefile %zu' to accept the file transfer.", ft->index);
     }
 }
 
-static void chat_onConferenceInvite(ToxWindow *self, Tox *tox, int32_t friendnumber, uint8_t type,
+static void chat_onConferenceInvite(ToxWindow *self, Toxic *toxic, int32_t friendnumber, uint8_t type,
                                     const char *conference_pub_key,
                                     uint16_t length)
 {
+    if (toxic == NULL || self == NULL) {
+        return;
+    }
+
     if (self->num != friendnumber) {
         return;
     }
@@ -743,10 +764,11 @@ static void chat_onConferenceInvite(ToxWindow *self, Tox *tox, int32_t friendnum
         free(Friends.list[friendnumber].conference_invite.key);
     }
 
-    char *k = malloc(length);
+    char *k = malloc(length * sizeof(char));
 
     if (k == NULL) {
-        exit_toxic_err("Failed in chat_onConferenceInvite", FATALERR_MEMORY);
+        line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Conference invite failed (OOM)");
+        return;
     }
 
     memcpy(k, conference_pub_key, length);
@@ -756,7 +778,7 @@ static void chat_onConferenceInvite(ToxWindow *self, Tox *tox, int32_t friendnum
     Friends.list[friendnumber].conference_invite.type = type;
 
     char name[TOX_MAX_NAME_LENGTH];
-    get_nick_truncate(tox, name, friendnumber);
+    get_nick_truncate(toxic->tox, name, friendnumber);
 
     const char *description = type == TOX_CONFERENCE_TYPE_AV ? "an audio conference" : "a conference";
 
@@ -772,10 +794,15 @@ static void chat_onConferenceInvite(ToxWindow *self, Tox *tox, int32_t friendnum
     line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Type \"/cjoin\" to join the chat.");
 }
 
-static void chat_onGroupInvite(ToxWindow *self, Tox *tox, uint32_t friendnumber, const char *invite_data, size_t length,
+static void chat_onGroupInvite(ToxWindow *self, Toxic *toxic, uint32_t friendnumber, const char *invite_data,
+                               size_t length,
                                const char *group_name, size_t group_name_length)
 {
     UNUSED_VAR(group_name_length);
+
+    if (self == NULL || toxic == NULL) {
+        return;
+    }
 
     if (self->num != friendnumber) {
         return;
@@ -785,7 +812,7 @@ static void chat_onGroupInvite(ToxWindow *self, Tox *tox, uint32_t friendnumber,
         free(Friends.list[friendnumber].group_invite.data);
     }
 
-    Friends.list[friendnumber].group_invite.data = malloc(length * sizeof(uint8_t));
+    Friends.list[friendnumber].group_invite.data = malloc(length * sizeof(char));
 
     if (Friends.list[friendnumber].group_invite.data == NULL) {
         return;
@@ -797,7 +824,7 @@ static void chat_onGroupInvite(ToxWindow *self, Tox *tox, uint32_t friendnumber,
     sound_notify(self, generic_message, NT_WNDALERT_2 | user_settings->bell_on_invite, NULL);
 
     char name[TOX_MAX_NAME_LENGTH];
-    get_nick_truncate(tox, name, friendnumber);
+    get_nick_truncate(toxic->tox, name, friendnumber);
 
     if (self->active_box != -1) {
         box_silent_notify2(self, NT_WNDALERT_2 | NT_NOFOCUS, self->active_box, "invites you to join group chat");
@@ -811,9 +838,13 @@ static void chat_onGroupInvite(ToxWindow *self, Tox *tox, uint32_t friendnumber,
 }
 
 #ifdef GAMES
-void chat_onGameInvite(ToxWindow *self, Tox *tox, uint32_t friend_number, const uint8_t *data, size_t length)
+void chat_onGameInvite(ToxWindow *self, Toxic *toxic, uint32_t friend_number, const uint8_t *data, size_t length)
 {
-    if (!self || self->num != friend_number) {
+    if (toxic == NULL || self == NULL) {
+        return;
+    }
+
+    if (self->num != friend_number) {
         return;
     }
 
@@ -821,7 +852,7 @@ void chat_onGameInvite(ToxWindow *self, Tox *tox, uint32_t friend_number, const 
         return;
     }
 
-    uint8_t version = data[0];
+    const uint8_t version = data[0];
 
     if (version != GAME_NETWORKING_VERSION) {
         line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0,
@@ -865,7 +896,7 @@ void chat_onGameInvite(ToxWindow *self, Tox *tox, uint32_t friend_number, const 
     Friends.list[friend_number].game_invite.data_length = data_length;
 
     char name[TOX_MAX_NAME_LENGTH];
-    get_nick_truncate(tox, name, friend_number);
+    get_nick_truncate(toxic->tox, name, friend_number);
 
     if (self->active_box != -1) {
         box_notify2(self, generic_message, NT_WNDALERT_2 | user_settings->bell_on_invite, self->active_box,
@@ -885,12 +916,12 @@ void chat_onGameInvite(ToxWindow *self, Tox *tox, uint32_t friend_number, const 
 /* AV Stuff */
 #ifdef AUDIO
 
-void chat_onInvite(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onInvite(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
-    if (!self || self->num != friend_number) {
+    if (self == NULL || self->num != friend_number) {
         return;
     }
 
@@ -910,9 +941,9 @@ void chat_onInvite(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state
     }
 }
 
-void chat_onRinging(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onRinging(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
     if (!self || self->num != friend_number) {
@@ -930,9 +961,9 @@ void chat_onRinging(ToxWindow *self, ToxAV *av, uint32_t friend_number, int stat
 #endif /* SOUND_NOTIFY */
 }
 
-void chat_onStarting(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onStarting(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
     if (!self || self->num != friend_number) {
@@ -951,9 +982,9 @@ void chat_onStarting(ToxWindow *self, ToxAV *av, uint32_t friend_number, int sta
 #endif /* SOUND_NOTIFY */
 }
 
-void chat_onEnding(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onEnding(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
     if (!self || self->num != friend_number) {
@@ -970,9 +1001,9 @@ void chat_onEnding(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state
 #endif /* SOUND_NOTIFY */
 }
 
-void chat_onError(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onError(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
     if (!self || self->num != friend_number) {
@@ -987,9 +1018,9 @@ void chat_onError(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
 #endif /* SOUND_NOTIFY */
 }
 
-void chat_onStart(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onStart(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
     if (!self || self->num != friend_number) {
@@ -1008,9 +1039,9 @@ void chat_onStart(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
 #endif /* SOUND_NOTIFY */
 }
 
-void chat_onCancel(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onCancel(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
     if (!self || self->num != friend_number) {
@@ -1026,9 +1057,9 @@ void chat_onCancel(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state
 #endif /* SOUND_NOTIFY */
 }
 
-void chat_onReject(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onReject(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
     if (!self  || self->num != friend_number) {
@@ -1043,9 +1074,9 @@ void chat_onReject(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state
 #endif /* SOUND_NOTIFY */
 }
 
-void chat_onEnd(ToxWindow *self, ToxAV *av, uint32_t friend_number, int state)
+void chat_onEnd(ToxWindow *self, Toxic *toxic, uint32_t friend_number, int state)
 {
-    UNUSED_VAR(av);
+    UNUSED_VAR(toxic);
     UNUSED_VAR(state);
 
     if (!self || self->num != friend_number) {
@@ -1177,8 +1208,14 @@ static void send_action(ToxWindow *self, ChatContext *ctx, Tox *tox, char *actio
 /*
  * Return true if input is recognized by handler
  */
-bool chat_onKey(ToxWindow *self, Tox *tox, wint_t key, bool ltr)
+bool chat_onKey(ToxWindow *self, Toxic *toxic, wint_t key, bool ltr)
 {
+    if (toxic == NULL || self == NULL) {
+        return false;
+    }
+
+    Tox *tox = toxic->tox;
+
     ChatContext *ctx = self->chatwin;
     StatusBar *statusbar = self->stb;
 
@@ -1223,14 +1260,14 @@ bool chat_onKey(ToxWindow *self, Tox *tox, wint_t key, bool ltr)
 
         /* TODO: make this not suck */
         if (wcsncmp(ctx->line, L"/sendfile ", wcslen(L"/sendfile ")) == 0) {
-            diff = dir_match(self, tox, ctx->line, L"/sendfile");
+            diff = dir_match(self, toxic, ctx->line, L"/sendfile");
         } else if (wcsncmp(ctx->line, L"/avatar ", wcslen(L"/avatar ")) == 0) {
-            diff = dir_match(self, tox, ctx->line, L"/avatar");
+            diff = dir_match(self, toxic, ctx->line, L"/avatar");
         }
 
 #ifdef PYTHON
         else if (wcsncmp(ctx->line, L"/run ", wcslen(L"/run ")) == 0) {
-            diff = dir_match(self, tox, ctx->line, L"/run");
+            diff = dir_match(self, toxic, ctx->line, L"/run");
         }
 
 #endif
@@ -1277,7 +1314,7 @@ bool chat_onKey(ToxWindow *self, Tox *tox, wint_t key, bool ltr)
                 } else if (strncmp(line, "/me ", strlen("/me ")) == 0) {
                     send_action(self, ctx, tox, line + strlen("/me "));
                 } else {
-                    execute(ctx->history, self, tox, line, CHAT_COMMAND_MODE);
+                    execute(ctx->history, self, toxic, line, CHAT_COMMAND_MODE);
                 }
             } else if (line[0]) {
                 char selfname[TOX_MAX_NAME_LENGTH];
@@ -1543,9 +1580,15 @@ static void chat_init_log(ToxWindow *self, Tox *tox, const char *self_nick)
     }
 }
 
-static void chat_onInit(ToxWindow *self, Tox *tox)
+static void chat_onInit(ToxWindow *self, Toxic *toxic)
 {
     curs_set(1);
+
+    if (toxic == NULL || self == NULL) {
+        return;
+    }
+
+    Tox *tox = toxic->tox;
 
     int x2;
     int y2;
@@ -1599,7 +1642,7 @@ static void chat_onInit(ToxWindow *self, Tox *tox)
 
     chat_init_log(self, tox, nick);
 
-    execute(ctx->history, self, tox, "/log", GLOBAL_COMMAND_MODE);  // Print log status to screen
+    execute(ctx->history, self, toxic, "/log", GLOBAL_COMMAND_MODE);  // Print log status to screen
 
     scrollok(ctx->history, 0);
     wmove(self->window, y2 - CURS_Y_OFFSET, 0);
