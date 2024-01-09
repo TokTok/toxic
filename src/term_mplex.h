@@ -27,7 +27,7 @@
  * yes, it initializes a timer which periodically checks the attached/detached
  * state of the terminal and updates away status accordingly.
  */
-int init_mplex_away_timer(Tox *m);
+int init_mplex_away_timer(Tox *tox);
 
 void lock_status(void);
 void unlock_status(void);

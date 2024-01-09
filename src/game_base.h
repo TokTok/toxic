@@ -230,7 +230,7 @@ void game_set_cb_on_packet(GameData *game, cb_game_on_packet *func, void *cb_dat
  * Return -3 if multiplayer game is being initialized outside of a contact's window.
  * Return -4 on other failure.
  */
-int game_initialize(const ToxWindow *self, Tox *m, GameType type, uint32_t id, const uint8_t *multiplayer_data,
+int game_initialize(const ToxWindow *self, Tox *tox, GameType type, uint32_t id, const uint8_t *multiplayer_data,
                     size_t length, bool self_host);
 
 /*

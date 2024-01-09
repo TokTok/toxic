@@ -248,17 +248,17 @@ static struct PyModuleDef toxic_api_module = {
 
 PyMODINIT_FUNC PyInit_toxic_api(void)
 {
-    PyObject *m = PyModule_Create(&toxic_api_module);
+    PyObject *tox = PyModule_Create(&toxic_api_module);
     PyObject *global_command_const    = Py_BuildValue("i", GLOBAL_COMMAND_MODE);
     PyObject *chat_command_const      = Py_BuildValue("i", CHAT_COMMAND_MODE);
     PyObject *conference_command_const = Py_BuildValue("i", CONFERENCE_COMMAND_MODE);
-    PyObject_SetAttrString(m, "GLOBAL_COMMAND",    global_command_const);
-    PyObject_SetAttrString(m, "CHAT_COMMAND",      chat_command_const);
-    PyObject_SetAttrString(m, "CONFERENCE_COMMAND", conference_command_const);
+    PyObject_SetAttrString(tox, "GLOBAL_COMMAND",    global_command_const);
+    PyObject_SetAttrString(tox, "CHAT_COMMAND",      chat_command_const);
+    PyObject_SetAttrString(tox, "CONFERENCE_COMMAND", conference_command_const);
     Py_DECREF(global_command_const);
     Py_DECREF(chat_command_const);
     Py_DECREF(conference_command_const);
-    return m;
+    return tox;
 }
 
 void terminate_python(void)
@@ -279,9 +279,9 @@ void terminate_python(void)
     Py_Finalize();
 }
 
-void init_python(Tox *m)
+void init_python(Tox *tox)
 {
-    user_tox = m;
+    user_tox = tox;
     PyImport_AppendInittab("toxic_api", PyInit_toxic_api);
     Py_Initialize();
 }
