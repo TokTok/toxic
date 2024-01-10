@@ -413,7 +413,7 @@ void on_group_custom_packet(Tox *tox, uint32_t groupnumber, uint32_t peer_id, co
 
     if (length > header_size) {
         if ((data[0] == 0x66) && (data[1] == 0x77) && (data[2] == 0x88) &&
-            (data[3] == 0x11) && (data[4] == 0x34) && (data[5] == 0x35)) {
+                (data[3] == 0x11) && (data[4] == 0x34) && (data[5] == 0x35)) {
             if ((data[6] == 0x1) && (data[7] == 0x11)) {
 
                 // TODO: handle actual incoming file data
