@@ -180,6 +180,8 @@ void on_group_rejected(Tox *tox, uint32_t groupnumber, Tox_Group_Join_Fail type,
 void on_group_moderation(Tox *tox, uint32_t groupnumber, uint32_t source_peernum, uint32_t target_peernum,
                          Tox_Group_Mod_Event type, void *userdata);
 void on_group_voice_state(Tox *tox, uint32_t groupnumber, Tox_Group_Voice_State voice_state, void *userdata);
+void on_group_custom_packet(Tox *tox, uint32_t groupnumber, uint32_t peer_id, const uint8_t *data,
+                            size_t length, void *user_data);
 
 extern char *DATA_FILE;
 extern char *BLOCK_FILE;

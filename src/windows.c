@@ -394,6 +394,49 @@ void on_group_invite(Tox *tox, uint32_t friendnumber, const uint8_t *invite_data
     }
 }
 
+void on_group_custom_packet(Tox *tox, uint32_t groupnumber, uint32_t peer_id, const uint8_t *data,
+                            size_t length, void *user_data)
+{
+    /*
+    | what      | Length in bytes| Contents
+    |------     |--------        |------------------
+    | magic     |       6        |  0x667788113435
+    | version   |       1        |  0x01
+    | pkt id    |       1        |  0x11
+    | msg id    |      32        | *uint8_t  to uniquely identify the message
+    | create ts |       4        |  uint32_t  unixtimestamp in UTC of local wall clock (in bigendian)
+    | filename  |     255        |  *uint8_t  len TOX_MAX_FILENAME_LENGTH, data first, then pad with NULL bytes
+    | data      |[1, 36701]      |  *uint8_t  bytes of file data, zero length files not allowed!
+     */
+
+    const uint32_t header_size = 6 + 1 + 1 + 32 + 4 + 255;
+
+    if (length > header_size) {
+        if ((data[0] == 0x66) && (data[1] == 0x77) && (data[2] == 0x88) &&
+            (data[3] == 0x11) && (data[4] == 0x34) && (data[5] == 0x35)) {
+            if ((data[6] == 0x1) && (data[7] == 0x11)) {
+
+                // TODO: handle actual incoming file data
+                const uint32_t file_size = length - header_size;
+                const uint8_t *file_data = data + header_size;
+                UNUSED_VAR(file_size);
+                UNUSED_VAR(file_data);
+                // save file data here ...
+                // TODO: handle actual incoming file data
+
+                const char *msg = "incoming group file";
+                const size_t msg_length = strlen(msg);
+
+                for (size_t i = 0; i < MAX_WINDOWS_NUM; ++i) {
+                    if (windows[i] != NULL && windows[i]->onGroupMessage != NULL) {
+                        windows[i]->onGroupMessage(windows[i], tox, groupnumber, peer_id, TOX_MESSAGE_TYPE_NORMAL, msg, msg_length);
+                    }
+                }
+            }
+        }
+    }
+}
+
 void on_group_message(Tox *tox, uint32_t groupnumber, uint32_t peer_id, TOX_MESSAGE_TYPE type,
                       const uint8_t *message, size_t length, uint32_t message_id, void *userdata)
 {

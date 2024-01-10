@@ -883,6 +883,7 @@ static void init_tox_callbacks(Tox *tox)
     tox_callback_group_join_fail(tox, on_group_rejected);
     tox_callback_group_moderation(tox, on_group_moderation);
     tox_callback_group_voice_state(tox, on_group_voice_state);
+    tox_callback_group_custom_packet(tox, on_group_custom_packet);
 }
 
 static void init_tox_options(struct Tox_Options *tox_opts)
