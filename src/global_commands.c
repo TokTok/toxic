@@ -198,7 +198,7 @@ void cmd_add(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)[M
             return;
         }
 
-        id_bin[i] = x;
+        id_bin[i] = (char) x;
     }
 
     if (friend_is_blocked(id_bin)) {
@@ -568,15 +568,20 @@ void cmd_join(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)[
             return;
         }
 
-        id_bin[i] = x;
+        id_bin[i] = (char) x;
     }
 
     const char *passwd = NULL;
-    uint16_t passwd_len = 0;
+    size_t passwd_len = 0;
 
     if (argc > 1) {
         passwd = argv[2];
         passwd_len = strlen(passwd);
+    }
+
+    if (passwd_len > TOX_GROUP_MAX_PASSWORD_SIZE) {
+        line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Password length cannot exceed %d.", TOX_GROUP_MAX_PASSWORD_SIZE);
+        return;
     }
 
     size_t nick_length = tox_self_get_name_size(tox);
@@ -586,15 +591,10 @@ void cmd_join(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)[
 
     Tox_Err_Group_Join err;
     uint32_t groupnumber = tox_group_join(tox, (uint8_t *) id_bin, (const uint8_t *) self_nick, nick_length,
-                                          (const uint8_t *) passwd, passwd_len, &err);
+                                          (const uint8_t *) passwd, (uint16_t) passwd_len, &err);
 
     if (err != TOX_ERR_GROUP_JOIN_OK) {
-        if (err == TOX_ERR_GROUP_JOIN_TOO_LONG) {
-            line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Password length cannot exceed %d.", TOX_GROUP_MAX_PASSWORD_SIZE);
-        } else {
-            line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Failed to join group (error %d).", err);
-        }
-
+        line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Failed to join group (error %d).", err);
         return;
     }
 
