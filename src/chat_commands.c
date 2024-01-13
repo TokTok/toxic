@@ -23,6 +23,7 @@
 #include <dirent.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "chat.h"
 #include "conference.h"
@@ -391,6 +392,7 @@ void cmd_fopen(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)
     }
     // end make tmpdir if it does not exist
 
+    line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "The file path is '%s'", ft->file_path);
 
     line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Saving file [%ld] as: '%s'", idx, ft->file_path);
 
@@ -407,6 +409,7 @@ void cmd_fopen(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)
     char command[MAX_STR_SIZE];
     snprintf(command, sizeof(command), "xdg-open %s", ft->file_path);
     line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "I am about to run the xdg command.");
+    line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "The file path is '%s'", ft->file_path);
 
     int open_result = popen(command, "r");
 
