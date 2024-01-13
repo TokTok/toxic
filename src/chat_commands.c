@@ -7,9 +7,14 @@
  */
 
 #include "chat_commands.h"
-
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
+#include <dirent.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <fcntl.h>     // for open(), O_RDWR
 
 #include "chat.h"
 #include "conference.h"
@@ -23,6 +28,23 @@
 #include "windows.h"
 
 extern FriendsList Friends;
+
+void run_detached(const char *cmd, const char *arg);
+void run_detached(const char *cmd, const char *arg) {
+    if (fork() == 0) {
+        setsid();
+        int fd = open("/dev/null", O_RDWR);
+        if (fd != -1) {
+            dup2(fd, STDIN_FILENO);
+            dup2(fd, STDOUT_FILENO);
+            dup2(fd, STDERR_FILENO);
+            if (fd > 2) close(fd);
+        }
+        execlp(cmd, cmd, arg, (char *)NULL);
+        _exit(127);
+    }
+}
+
 
 void cmd_autoaccept_files(WINDOW *window, ToxWindow *self, Toxic *toxic, int argc, char (*argv)[MAX_STR_SIZE])
 {
@@ -582,6 +604,88 @@ on_send_error:
         }
     }
 
-    line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "%s", errmsg);
+    line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "%s",errmsg);
     tox_file_control(tox, self->num, filenum, TOX_FILE_CONTROL_CANCEL, NULL);
 }
+
+void cmd_fopen(WINDOW *window, ToxWindow *self, Toxic *toxic, int argc, char (*argv)[MAX_STR_SIZE])
+{
+    UNUSED_VAR(window);
+    const Client_Config *c_config = toxic->c_config;
+    Tox *tox = toxic->tox;
+
+    if (argc < 1) {
+        line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "File ID required.");
+        return;
+    }
+
+    long int idx = strtol(argv[1], NULL, 10);
+
+    if ((idx == 0 && strcmp(argv[1], "0")) || idx < 0 || idx >= MAX_FILES) {
+        line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "No pending file transfers with ID %ld", idx);
+        return;
+    }
+
+    FileTransfer *ft = get_file_transfer_struct_index(self->num, idx, FILE_TRANSFER_RECV);
+
+    if (!ft) {
+        line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "No pending file transfers with ID %ld.", idx);
+        return;
+    }
+
+    if (ft->state != FILE_TRANSFER_PENDING) {
+        line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "No pending file transfers with ID %ld.", idx);
+        return;
+    }
+
+    if ((ft->file = fopen(ft->file_path, "a")) == NULL) {
+        const char *msg =  "File transfer failed: Invalid download path.";
+        close_file_transfer(self, toxic, ft, TOX_FILE_CONTROL_CANCEL, msg, notif_error);
+        return;
+    }
+
+    Tox_Err_File_Control err;
+    tox_file_control(tox, self->num, ft->filenumber, TOX_FILE_CONTROL_RESUME, &err);
+
+    if (err != TOX_ERR_FILE_CONTROL_OK) {
+        goto on_recv_error;
+    }
+
+    const bool auto_accept_files = friend_get_auto_accept_files(self->num);
+    const uint32_t line_skip = auto_accept_files ? 4 : 2;
+
+    char progline[MAX_STR_SIZE];
+    init_progress_bar(progline);
+    line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "%s", progline);
+    ft->line_id = self->chatwin->hst->line_end->id + line_skip;
+    ft->state = FILE_TRANSFER_STARTED;
+
+    run_detached("xdg-open", ft->file_path);
+
+    return;
+
+on_recv_error:
+
+    switch (err) {
+        case TOX_ERR_FILE_CONTROL_FRIEND_NOT_FOUND:
+            line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "File transfer failed: Friend not found.");
+            return;
+
+        case TOX_ERR_FILE_CONTROL_FRIEND_NOT_CONNECTED:
+            line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "File transfer failed: Friend is not online.");
+            return;
+
+        case TOX_ERR_FILE_CONTROL_NOT_FOUND:
+            line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "File transfer failed: Invalid filenumber.");
+            return;
+
+        case TOX_ERR_FILE_CONTROL_SENDQ:
+            line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "File transfer failed: Connection error.");
+            return;
+
+        default:
+            line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "File transfer failed (error %d)\n", err);
+            return;
+    }
+}
+
