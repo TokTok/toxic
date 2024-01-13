@@ -382,7 +382,8 @@ void cmd_fopen(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)
     // make tmp_dir if it does not exist
     /// don't need this for now, prob should go somewhere else anyway.
     const char *tmp_dir = "/tmp/toxic-download-dir/";
-    DIR* dir = opendir("/tmp/toxic-download-dir/");
+    DIR *dir = opendir("/tmp/toxic-download-dir/");
+
     if (dir) {
         closedir(dir);
     }
@@ -390,6 +391,7 @@ void cmd_fopen(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)
     if (mkdir(tmp_dir, S_IRWXU) == -1) {
         line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Could not create tox download /tmp/ directory.\n", err);
     }
+
     // end make tmpdir if it does not exist
 
     line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "The file path is '%s'", ft->file_path);
@@ -409,6 +411,7 @@ void cmd_fopen(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)
     while (ft->state != FILE_TRANSFER_INACTIVE) {
         usleep(100000);
     }
+
     char command[MAX_STR_SIZE];
     snprintf(command, sizeof(command), "xdg-open %s", ft->file_path);
     line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "I am about to run the xdg command.");
@@ -419,6 +422,7 @@ void cmd_fopen(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)
     if (open_result == -1) {
         line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Could not open file.");
     }
+
     // end make and call xdg command
 
     return;
