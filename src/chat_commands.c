@@ -408,7 +408,7 @@ void cmd_fopen(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)
     snprintf(command, sizeof(command), "xdg-open %s", ft->file_path);
     line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "I am about to run the xdg command.");
 
-    int open_result = system(command);
+    int open_result = popen(command, "r");
 
     if (open_result == -1) {
         line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Could not open file.");
