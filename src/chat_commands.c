@@ -406,18 +406,18 @@ void cmd_fopen(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv)
     ft->state = FILE_TRANSFER_STARTED;
 
     // make and call xdg command
-    if (ft->state == FILE_TRANSFER_INACTIVE) {
-        char command[MAX_STR_SIZE];
-        snprintf(command, sizeof(command), "xdg-open %s", ft->file_path);
-        line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "I am about to run the xdg command.");
-        line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "The file path is '%s'", ft->file_path);
+    while (ft->state != FILE_TRANSFER_INACTIVE) {
+        usleep(100000);
+    }
+    char command[MAX_STR_SIZE];
+    snprintf(command, sizeof(command), "xdg-open %s", ft->file_path);
+    line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "I am about to run the xdg command.");
+    line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "The file path is '%s'", ft->file_path);
 
-        int open_result = popen(command, "r");
+    int open_result = popen(command, "r");
 
-        if (open_result == -1) {
-            line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Could not open file.");
-        }
-        return;
+    if (open_result == -1) {
+        line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Could not open file.");
     }
     // end make and call xdg command
 
