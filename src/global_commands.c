@@ -280,7 +280,7 @@ void cmd_colour(WINDOW *window, ToxWindow *self, Toxic *toxic, int argc, char (*
     UNUSED_VAR(toxic);
 
     if (self == NULL) {
-	return;
+        return;
     }
 
     if (argc != 1) {
