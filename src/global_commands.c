@@ -259,7 +259,7 @@ void cmd_colour(WINDOW *window, ToxWindow *self, Tox *tox, int argc, char (*argv
 
     if (argc != 1) {
         line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0,
-                      "Change the name of the focused window with /colour [white|black|yellow|red|green|cyan|purple]");
+                      "Change the name of the focused window with /colour [white|black|yellow|red|green|cyan|magenta|blue]");
         return;
     }
 

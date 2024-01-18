@@ -67,7 +67,7 @@ typedef enum {
     BAR_TEXT,
     STATUS_ONLINE,
     BAR_ACCENT,
-    PURPLE_BG,
+    MAGENTA_BG,
     BLACK_BG,
     STATUS_BUSY,
     STATUS_AWAY,
@@ -77,9 +77,10 @@ typedef enum {
     RED_BAR_FG,
     GREEN_BAR_FG,
     CYAN_BAR_FG,
-    PURPLE_BAR_FG,
+    MAGENTA_BAR_FG,
     YELLOW_BAR_FG,
     BLACK_BAR_FG,
+    BLUE_BAR_FG,
 } C_COLOURS;
 
 /* tab alert types: lower types take priority (this relies on the order of C_COLOURS) */
@@ -87,7 +88,7 @@ typedef enum {
     WINDOW_ALERT_NONE = 0,
     WINDOW_ALERT_0 = STATUS_ONLINE,
     WINDOW_ALERT_1 = BAR_ACCENT,
-    WINDOW_ALERT_2 = PURPLE_BG,
+    WINDOW_ALERT_2 = MAGENTA_BG,
 } WINDOW_ALERTS;
 
 typedef enum {
