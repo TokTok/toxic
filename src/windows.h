@@ -217,7 +217,8 @@ struct ToxWindow {
     void(*onGroupMessage)(ToxWindow *, Toxic *, uint32_t, uint32_t, TOX_MESSAGE_TYPE, const char *, size_t);
     void(*onGroupPrivateMessage)(ToxWindow *, Toxic *, uint32_t, uint32_t, const char *, size_t);
     void(*onGroupPeerJoin)(ToxWindow *, Toxic *, uint32_t, uint32_t);
-    void(*onGroupPeerExit)(ToxWindow *, Toxic *, uint32_t, uint32_t, Tox_Group_Exit_Type, const char *, size_t, const char *,
+    void(*onGroupPeerExit)(ToxWindow *, Toxic *, uint32_t, uint32_t, Tox_Group_Exit_Type, const char *, size_t,
+                           const char *,
                            size_t);
     void(*onGroupNickChange)(ToxWindow *, Toxic *, uint32_t, uint32_t, const char *, size_t);
     void(*onGroupStatusChange)(ToxWindow *, Toxic *, uint32_t, uint32_t, TOX_USER_STATUS);
