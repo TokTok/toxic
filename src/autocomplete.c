@@ -96,7 +96,8 @@ static size_t get_str_match(ToxWindow *self, char *match, size_t match_sz, const
  *
  * Note: This function should not be called directly. Use complete_line() and complete_path() instead.
  */
-static int complete_line_helper(ToxWindow *self, Toxic *toxic, const char *const *list, const size_t n_items, bool dir_search)
+static int complete_line_helper(ToxWindow *self, Toxic *toxic, const char *const *list, const size_t n_items,
+                                bool dir_search)
 {
     ChatContext *ctx = self->chatwin;
 

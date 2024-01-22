@@ -385,6 +385,7 @@ void on_lossless_custom_packet(Tox *tox, uint32_t friendnumber, const uint8_t *d
 
             break;
         }
+
 #else
         UNUSED_VAR(toxic);
 #endif // GAMES
