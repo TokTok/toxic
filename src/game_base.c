@@ -38,7 +38,6 @@
 #include "windows.h"
 
 extern struct Winthread Winthread;
-extern struct user_settings *user_settings;
 
 /*
  * Determines the base rate at which game objects should update their state.
@@ -112,14 +111,14 @@ const char *game_get_name_string(GameType type)
     return NULL;
 }
 
-void game_list_print(ToxWindow *self)
+void game_list_print(ToxWindow *self, const Client_Config *c_config)
 {
-    line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "Available games:");
+    line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "Available games:");
 
     const char *name = NULL;
 
     for (size_t i = 0; (name = game_list[i].name); ++i) {
-        line_info_add(self, false, NULL, NULL, SYS_MSG, 0, 0, "%zu: %s", i + 1, name);
+        line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "%zu: %s", i + 1, name);
     }
 }
 
@@ -155,11 +154,15 @@ void game_window_notify(const GameData *game, const char *message)
         return;
     }
 
+    const Client_Config *c_config = game->toxic->c_config;
+
+    const bool bell_on_message = c_config->bell_on_message;
+
     if (self->active_box != -1) {
-        box_notify2(self, generic_message, NT_WNDALERT_0 | NT_NOFOCUS | user_settings->bell_on_message,
+        box_notify2(self, c_config, generic_message, NT_WNDALERT_0 | NT_NOFOCUS | bell_on_message,
                     self->active_box, "%s", message);
     } else {
-        box_notify(self, generic_message, NT_WNDALERT_0 | NT_NOFOCUS | user_settings->bell_on_message,
+        box_notify(self, c_config, generic_message, NT_WNDALERT_0 | NT_NOFOCUS | bell_on_message,
                    &self->active_box, self->name, "%s", message);
     }
 }
@@ -187,14 +190,14 @@ void game_kill(ToxWindow *self)
     }
 
     kill_notifs(self->active_box);
-    del_window(self);
+    del_window(self, game->toxic->c_config);
 
     if (get_num_active_windows_type(WINDOW_TYPE_GAME) == 0) {
         set_window_refresh_rate(NCURSES_DEFAULT_REFRESH_RATE);
     }
 }
 
-static void game_init_abort(const ToxWindow *parent, ToxWindow *self)
+static void game_init_abort(const ToxWindow *parent, ToxWindow *self, const Client_Config *c_config)
 {
     game_kill(self);
     set_active_window_index(parent->index);
@@ -253,6 +256,8 @@ static int game_initialize_type(GameData *game, const uint8_t *data, size_t leng
 int game_initialize(const ToxWindow *parent, Toxic *toxic, GameType type, uint32_t id, const uint8_t *multiplayer_data,
                     size_t length, bool self_host)
 {
+    const Client_Config *c_config = toxic->c_config;
+
     int max_x;
     int max_y;
     getmaxyx(parent->window, max_y, max_x);
@@ -279,12 +284,12 @@ int game_initialize(const ToxWindow *parent, Toxic *toxic, GameType type, uint32
 
     if (game->is_multiplayer) {
         if (parent->type != WINDOW_TYPE_CHAT) {
-            game_init_abort(parent, self);
+            game_init_abort(parent, self, c_config);
             return -3;
         }
 
         if (get_friend_connection_status(parent->num) == TOX_CONNECTION_NONE) {
-            game_init_abort(parent, self);
+            game_init_abort(parent, self, c_config);
             return -2;
         }
 
@@ -303,14 +308,14 @@ int game_initialize(const ToxWindow *parent, Toxic *toxic, GameType type, uint32
     game->friend_number = parent->num;
 
     if (game->window == NULL) {
-        game_init_abort(parent, self);
+        game_init_abort(parent, self, c_config);
         return -4;
     }
 
     const int init_ret = game_initialize_type(game, multiplayer_data, length, self_host);
 
     if (init_ret < 0) {
-        game_init_abort(parent, self);
+        game_init_abort(parent, self, c_config);
         return init_ret;
     }
 

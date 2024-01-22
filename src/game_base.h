@@ -257,7 +257,7 @@ const char *game_get_name_string(GameType type);
 /*
  * Prints all available games to window associated with `self`.
  */
-void game_list_print(ToxWindow *self);
+void game_list_print(ToxWindow *self, const Client_Config *c_config);
 
 /*
  * Return true if game `type` has a multiplayer mode.
