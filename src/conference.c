@@ -230,6 +230,7 @@ int init_conference_win(Toxic *toxic, uint32_t conferencenum, uint8_t type, cons
             if (!tox_conference_get_id(toxic->tox, conferencenum, (uint8_t *) conferences[i].id)) {
                 fprintf(stderr, "Failed to fetch conference ID for conferencenum: %u\n", conferencenum);
             }
+
 #ifdef AUDIO
             conferences[i].push_to_talk_enabled = toxic->c_config->push_to_talk;
 #endif
