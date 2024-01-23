@@ -169,6 +169,23 @@ groupchats = {
 // };
 };
 
+// Conference-specific config settings. Public keys are used as group identifiers
+// and must begin with the prefix "pk_". These take priority over global settings.
+conferences = {
+  pk_PUBLIC_KEY_1 = {
+    // The color of the conference's window tab name.
+    // colors: black, white, gray, brown, red, green, blue, cyan, yellow, magenta, orange, pink
+    tab_name_color="white";
+
+    // Enable autologging for this conference
+    autolog=false;
+  };
+
+// pk_PUBLIC_KEY_2 = {
+//   ...
+// };
+};
+
 // To disable a sound set the path to "silent"
 sounds = {
   error="__DATADIR__/sounds/ToxicError.wav";
