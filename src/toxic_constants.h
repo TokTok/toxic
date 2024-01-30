@@ -23,6 +23,8 @@
 #ifndef TOXIC_CONSTANTS_H
 #define TOXIC_CONSTANTS_H
 
+#include <stdio.h>  // needed for FILE
+
 #define UNKNOWN_NAME "Anonymous"
 #define DEFAULT_TOX_NAME "Tox User"   /* should always be the same as toxcore's default name */
 
@@ -88,5 +90,31 @@ typedef enum _FATAL_ERRS {
     FATALERR_TOXIC_INIT = -13,      /* Toxic instance failed to initialize */
     FATALERR_CURSES = -14,          /* Unrecoverable Ncurses error */
 } FATAL_ERRS;
+
+typedef struct Run_Options {
+    bool use_ipv4;
+    bool force_tcp;
+    bool disable_local_discovery;
+    bool debug;
+    bool default_locale;
+    bool use_custom_data;
+    bool use_custom_config_file;
+    bool no_connect;
+    bool encrypt_data;
+    bool unencrypt_data;
+
+    char nameserver_path[MAX_STR_SIZE];
+    char config_path[MAX_STR_SIZE];
+    char nodes_path[MAX_STR_SIZE];
+
+    bool logging;
+    FILE *log_fp;
+
+    char proxy_address[256];
+    uint8_t proxy_type;
+    uint16_t proxy_port;
+
+    uint16_t tcp_port;
+} Run_Options;
 
 #endif  // TOXIC_CONSTANTS_H
