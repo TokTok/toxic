@@ -77,7 +77,7 @@ static void set_default_friend_config_settings(ToxicFriend *friend, int autolog)
 
     Friend_Settings *settings = &friend->settings;
 
-    settings->auto_accept_files = (bool) (Default_Conf_Auto_Accept_Files != 0);
+    settings->auto_accept_files = (bool)(Default_Conf_Auto_Accept_Files != 0);
     settings->autolog = autolog == AUTOLOG_ON;
     settings->tab_name_colour = Default_Conf_Tab_Name_Colour;
 }
