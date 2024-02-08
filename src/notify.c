@@ -20,6 +20,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -63,6 +64,11 @@
 #define MAX_BOX_MSG_LEN 127
 #define SOUNDS_SIZE 10
 #define ACTIVE_NOTIFS_MAX 10
+
+#define CONTENT_HIDDEN_MESSAGE "[Content hidden]"
+
+static_assert(sizeof(CONTENT_HIDDEN_MESSAGE) < MAX_BOX_MSG_LEN,
+             "sizeof(CONTENT_HIDDEN_MESSAGE) >= MAX_BOX_MSG_LEN");
 
 static struct Control {
     time_t cooldown;
@@ -701,6 +707,8 @@ int box_notify(ToxWindow *self, const Toxic *toxic, Notification notif, uint64_t
         return -1;
     }
 
+    const Client_Config *c_config = toxic->c_config;
+
 #ifdef BOX_NOTIFY
 
     int id = sound_notify(self, toxic, notif, flags, id_indicator);
@@ -741,10 +749,14 @@ int box_notify(ToxWindow *self, const Toxic *toxic, Notification notif, uint64_t
         strcpy(actives[id].title + 20, "...");
     }
 
-    va_list __ARGS__;
-    va_start(__ARGS__, format);
-    vsnprintf(actives[id].messages[0], MAX_BOX_MSG_LEN, format, __ARGS__);
-    va_end(__ARGS__);
+    if (c_config->show_notification_content == SHOW_NOTIFICATION_CONTENT_ON) {
+        va_list __ARGS__;
+        va_start(__ARGS__, format);
+        vsnprintf(actives[id].messages[0], MAX_BOX_MSG_LEN, format, __ARGS__);
+        va_end(__ARGS__);
+    } else {
+        snprintf(actives[id].messages[actives[id].size], MAX_BOX_MSG_LEN, "%s", CONTENT_HIDDEN_MESSAGE);
+    }
 
     if (strlen(actives[id].messages[0]) > MAX_BOX_MSG_LEN - 3) {
         strcpy(actives[id].messages[0] + MAX_BOX_MSG_LEN - 3, "...");
@@ -756,7 +768,6 @@ int box_notify(ToxWindow *self, const Toxic *toxic, Notification notif, uint64_t
 
     notify_notification_set_timeout(actives[id].box, Control.notif_timeout);
     notify_notification_set_app_name(actives[id].box, "toxic");
-    /*notify_notification_add_action(actives[id].box, "lel", "default", m_notify_action, self, NULL);*/
     notify_notification_show(actives[id].box, NULL);
 
     control_unlock();
@@ -774,6 +785,8 @@ int box_notify2(ToxWindow *self, const Toxic *toxic, Notification notif, uint64_
         return -1;
     }
 
+    const Client_Config *c_config = toxic->c_config;
+
 #ifdef BOX_NOTIFY
 
     if (sound_notify2(self, toxic, notif, flags, id) == -1) {
@@ -787,10 +800,14 @@ int box_notify2(ToxWindow *self, const Toxic *toxic, Notification notif, uint64_
         return -1;
     }
 
-    va_list __ARGS__;
-    va_start(__ARGS__, format);
-    vsnprintf(actives[id].messages[actives[id].size], MAX_BOX_MSG_LEN, format, __ARGS__);
-    va_end(__ARGS__);
+    if (c_config->show_notification_content == SHOW_NOTIFICATION_CONTENT_ON) {
+        va_list __ARGS__;
+        va_start(__ARGS__, format);
+        vsnprintf(actives[id].messages[actives[id].size], MAX_BOX_MSG_LEN, format, __ARGS__);
+        va_end(__ARGS__);
+    } else {
+        snprintf(actives[id].messages[actives[id].size], MAX_BOX_MSG_LEN, "%s", CONTENT_HIDDEN_MESSAGE);
+    }
 
     if (strlen(actives[id].messages[actives[id].size]) > MAX_BOX_MSG_LEN - 3) {
         strcpy(actives[id].messages[actives[id].size] + MAX_BOX_MSG_LEN - 3, "...");
@@ -828,6 +845,8 @@ int box_silent_notify(ToxWindow *self, const Toxic *toxic, uint64_t flags, int *
         return -1;
     }
 
+    const Client_Config *c_config = toxic->c_config;
+
 #ifdef BOX_NOTIFY
 
     control_lock();
@@ -852,10 +871,14 @@ int box_silent_notify(ToxWindow *self, const Toxic *toxic, uint64_t flags, int *
         strcpy(actives[id].title + 20, "...");
     }
 
-    va_list __ARGS__;
-    va_start(__ARGS__, format);
-    vsnprintf(actives[id].messages[0], MAX_BOX_MSG_LEN, format, __ARGS__);
-    va_end(__ARGS__);
+    if (c_config->show_notification_content == SHOW_NOTIFICATION_CONTENT_ON) {
+        va_list __ARGS__;
+        va_start(__ARGS__, format);
+        vsnprintf(actives[id].messages[0], MAX_BOX_MSG_LEN, format, __ARGS__);
+        va_end(__ARGS__);
+    } else {
+        snprintf(actives[id].messages[actives[id].size], MAX_BOX_MSG_LEN, "%s", CONTENT_HIDDEN_MESSAGE);
+    }
 
     if (strlen(actives[id].messages[0]) > MAX_BOX_MSG_LEN - 3) {
         strcpy(actives[id].messages[0] + MAX_BOX_MSG_LEN - 3, "...");
@@ -868,7 +891,6 @@ int box_silent_notify(ToxWindow *self, const Toxic *toxic, uint64_t flags, int *
 
     notify_notification_set_timeout(actives[id].box, Control.notif_timeout);
     notify_notification_set_app_name(actives[id].box, "toxic");
-    /*notify_notification_add_action(actives[id].box, "lel", "default", m_notify_action, self, NULL);*/
     notify_notification_show(actives[id].box, NULL);
 
     control_unlock();
@@ -887,6 +909,8 @@ int box_silent_notify2(ToxWindow *self, const Toxic *toxic, uint64_t flags, int 
         return -1;
     }
 
+    const Client_Config *c_config = toxic->c_config;
+
 #ifdef BOX_NOTIFY
     control_lock();
 
@@ -895,11 +919,14 @@ int box_silent_notify2(ToxWindow *self, const Toxic *toxic, uint64_t flags, int 
         return -1;
     }
 
-
-    va_list __ARGS__;
-    va_start(__ARGS__, format);
-    vsnprintf(actives[id].messages[actives[id].size], MAX_BOX_MSG_LEN, format, __ARGS__);
-    va_end(__ARGS__);
+    if (c_config->show_notification_content == SHOW_NOTIFICATION_CONTENT_ON) {
+        va_list __ARGS__;
+        va_start(__ARGS__, format);
+        vsnprintf(actives[id].messages[actives[id].size], MAX_BOX_MSG_LEN, format, __ARGS__);
+        va_end(__ARGS__);
+    } else {
+        snprintf(actives[id].messages[actives[id].size], MAX_BOX_MSG_LEN, "%s", CONTENT_HIDDEN_MESSAGE);
+    }
 
     if (strlen(actives[id].messages[actives[id].size]) > MAX_BOX_MSG_LEN - 3) {
         strcpy(actives[id].messages[actives[id].size] + MAX_BOX_MSG_LEN - 3, "...");
