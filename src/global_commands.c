@@ -724,7 +724,7 @@ void cmd_log(WINDOW *window, ToxWindow *self, Toxic *toxic, int argc, char (*arg
     if (argc == 0) {
         if (log->log_on) {
             line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0,
-                         "Logging to: %s\nType \"/log off\" to disable. Logs are not encrypted.", log->path);
+                          "Logging to: %s\nType \"/log off\" to disable. Logs are not encrypted.", log->path);
         } else {
             line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0,
                           "Logging for this window is OFF; type \"/log on\" to enable.");
