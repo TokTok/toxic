@@ -231,12 +231,53 @@ int log_init(struct chatlog *log, const Client_Config *c_config, const char *nam
     return 0;
 }
 
+static void load_line(ToxWindow *self, const Client_Config *c_config, const char *line)
+{
+    const size_t line_length = strlen(line);
+    const int start_ts = char_find(0, line, '[');
+    const int end_ts = char_find(0, line, ']');
+    const int ts_len = end_ts - start_ts;
+
+    if (ts_len <= 0 || ts_len >= TIME_STR_SIZE || start_ts <= 0 || start_ts >= line_length
+          || end_ts <= 0 || end_ts >= line_length) {
+        goto on_error;
+    }
+
+    char timestamp[TIME_STR_SIZE];
+    snprintf(timestamp, ts_len, "%s", &line[start_ts + 1]);
+
+    const int end_name = char_find(end_ts, line, ':');
+
+    if (end_name + 2 >= line_length || end_name <= 0) {
+        goto on_error;
+    }
+
+    const char *message = &line[end_name + 2];
+
+    const int start_name = char_rfind(line, ' ', end_name);
+    const int name_len = end_name - start_name;
+
+    if (start_name >= line_length || start_name == 0 || name_len >= line_length - start_name || name_len <= 0) {
+        goto on_error;
+    }
+
+    char name[TOXIC_MAX_NAME_LENGTH + 1];
+    snprintf(name, name_len, "%s", &line[start_name + 1]);
+
+    line_info_load_history(self, c_config, timestamp, name, false, message);
+
+    return;
+
+on_error:
+    line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "%s", line);
+}
+
 /* Loads chat log history and prints it to `self` window.
  *
  * Return 0 on success or if log file doesn't exist.
  * Return -1 on failure.
  */
-int load_chat_history(struct chatlog *log, ToxWindow *self, const Client_Config *c_config)
+int load_chat_history(struct chatlog *log, ToxWindow *self, const Client_Config *c_config, const char *self_name)
 {
     if (log == NULL) {
         return -1;
@@ -303,7 +344,7 @@ int load_chat_history(struct chatlog *log, ToxWindow *self, const Client_Config 
     }
 
     while (line != NULL && count--) {
-        line_info_add(self, c_config, false, NULL, NULL, SYS_MSG, 0, 0, "%s", line);
+        load_line(self, c_config, line);
         line = strtok_r(NULL, "\n", &tmp);
     }
 
