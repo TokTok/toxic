@@ -239,7 +239,7 @@ static void load_line(ToxWindow *self, const Client_Config *c_config, const char
     const int ts_len = end_ts - start_ts;
 
     if (ts_len <= 0 || ts_len >= TIME_STR_SIZE || start_ts <= 0 || start_ts >= line_length
-          || end_ts <= 0 || end_ts >= line_length) {
+            || end_ts <= 0 || end_ts >= line_length) {
         goto on_error;
     }
 
