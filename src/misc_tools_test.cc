@@ -2,7 +2,8 @@
 
 #include <gtest/gtest.h>
 
-namespace {
+namespace
+{
 
 TEST(MultiByteStrings, TextLength)
 {

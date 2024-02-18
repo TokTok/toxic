@@ -2,7 +2,8 @@
 
 #include <gtest/gtest.h>
 
-namespace {
+namespace
+{
 
 TEST(LineInfo, TextWidth)
 {
