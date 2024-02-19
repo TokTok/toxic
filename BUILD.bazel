@@ -15,6 +15,7 @@ COPTS = [
         "-DHAVE_WIDECHAR",
         "-DPACKAGE_DATADIR='\"data\"'",
         "-DQRCODE",
+        "-DTOX_EXPERIMENTAL",
     ] + select({
         "//tools/config:linux-x86_64": [
             "-DAUDIO",

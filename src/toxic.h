@@ -45,7 +45,7 @@
 #include <tox/tox.h>
 
 #ifdef TOX_EXPERIMENTAL
-#include <tox/tox_private.h>
+#include <toxcore/tox_private.h>
 #endif
 
 #include "settings.h"
