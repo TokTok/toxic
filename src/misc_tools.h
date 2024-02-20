@@ -208,8 +208,10 @@ size_t get_group_nick_truncate(Tox *tox, char *buf, uint32_t peer_id, uint32_t g
 /* same as get_group_nick_truncate() but for self. */
 size_t get_group_self_nick_truncate(Tox *tox, char *buf, uint32_t groupnum);
 
-/* copies data to msg buffer.
-   returns length of msg, which will be no larger than size-1 */
+/* Copies the `data` string to the `msg` buffer, removing all \r \t and \v bytes.
+ *
+ * Returns length of the resulting string.
+ */
 size_t copy_tox_str(char *msg, size_t size, const char *data, size_t length);
 
 /* returns index of the first instance of ch in s starting at idx.
