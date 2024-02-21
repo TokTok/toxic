@@ -340,7 +340,7 @@ bool valid_nick(const char *nick)
         return false;
     }
 
-    for (size_t i = 0; nick[i]; ++i) {
+    for (size_t i = 0; nick[i] != '\0'; ++i) {
         char ch = nick[i];
 
         if ((ch == ' ' && nick[i + 1] == ' ') || !is_valid_char(ch)) {
@@ -351,13 +351,12 @@ bool valid_nick(const char *nick)
     return true;
 }
 
-/* Converts all newline/tab chars to spaces (use for strings that should be contained to a single line) */
-void filter_str(char *str, size_t len)
+void filter_string(char *str)
 {
-    for (size_t i = 0; i < len; ++i) {
-        char ch = str[i];
+    for (size_t i = 0; str[i] != '\0'; ++i) {
+        const char ch = str[i];
 
-        if (!is_valid_char(ch) || str[i] == '\0') {
+        if (!is_valid_char(ch)) {
             str[i] = ' ';
         }
     }
@@ -450,7 +449,7 @@ size_t get_nick_truncate(Tox *tox, char *buf, uint16_t buf_size, uint32_t friend
 
     len = MIN(len, buf_size - 1);
     buf[len] = '\0';
-    filter_str(buf, len);
+    filter_string(buf);
 
     return len;
 
@@ -475,7 +474,7 @@ int get_conference_nick_truncate(Tox *tox, char *buf, uint32_t peernum, uint32_t
 
     len = MIN(len, TOXIC_MAX_NAME_LENGTH - 1);
     buf[len] = '\0';
-    filter_str(buf, len);
+    filter_string(buf);
     return len;
 
 on_error:
@@ -507,7 +506,7 @@ size_t get_group_nick_truncate(Tox *tox, char *buf, uint32_t peer_id, uint32_t g
     len = MIN(len, TOXIC_MAX_NAME_LENGTH - 1);
     buf[len] = '\0';
 
-    filter_str(buf, len);
+    filter_string(buf);
 
     return len;
 }
@@ -531,9 +530,9 @@ size_t get_group_self_nick_truncate(Tox *tox, char *buf, uint32_t groupnum)
     }
 
     len = MIN(len, TOXIC_MAX_NAME_LENGTH - 1);
-    buf[len] = 0;
+    buf[len] = '\0';
 
-    filter_str(buf, len);
+    filter_string(buf);
 
     return len;
 }

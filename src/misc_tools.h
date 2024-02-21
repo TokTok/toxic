@@ -171,7 +171,7 @@ bool valid_nick(const char *nick);
 /* Converts all newline/tab chars to spaces
  * (use for strings that should be contained to a single line)
  */
-void filter_str(char *str, size_t len);
+void filter_string(char *str);
 
 /* gets base file name from path or original file name if no path is supplied */
 size_t get_file_name(char *namebuf, size_t bufsize, const char *pathname);
