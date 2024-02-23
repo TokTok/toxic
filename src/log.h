@@ -30,6 +30,7 @@ struct chatlog {
     time_t lastwrite;
     char path[MAX_STR_SIZE];
     bool log_on;    /* specific to current chat window */
+    uint32_t bytes_written;
 };
 
 typedef enum Log_Type {
