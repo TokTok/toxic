@@ -90,6 +90,31 @@ exports[`help window works 1`] = String.raw`
 ╰──────────────────────────────────────────────────────────────────────────────────────────╯
 `;
 
+exports[`last message is shown when terminal gets smaller 1`] = String.raw`
+╭────────────────────────────────────────────────────────────╮
+│ [Offline]                                         {13117C} │
+│Logging for this window is OFF; type "/log on" to enable.   │
+│21:41 - Toxic User: we're (1) writing some pretty long      │
+│                    message here, this is message 1 x       │
+│21:41 - Toxic User: we're (2) writing some pretty long      │
+│                    message here, this is message 2 x       │
+│21:41 - Toxic User: we're (3) writing some pretty long      │
+│                    message here, this is message 3 x       │
+│21:41 - Toxic User: we're (4) writing some pretty long      │
+│                    message here, this is message 4 x       │
+│21:41 - Toxic User: we're (5) writing some pretty long      │
+│                    message here, this is message 5 x       │
+│21:41 - Toxic User: we're (6) writing some pretty long      │
+│                    message here, this is message 6 x       │
+│21:41 - Toxic User: we're (7) writing some pretty long      │
+│                    message here, this is message 7 x       │
+│21:41 - Toxic User: we're (8) writing some pretty long      │
+│                    message here, this is message 8 x       │
+│  [Home] [Contacts] []                                      │
+│                                                            │
+╰────────────────────────────────────────────────────────────╯
+`;
+
 exports[`terminal resize works 1`] = String.raw`
 ╭────────────────────────────────────────────────────────────╮
 │ [Offline] Toxic User                                       │
