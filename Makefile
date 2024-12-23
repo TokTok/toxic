@@ -61,6 +61,10 @@ endif
 ifneq ($(filter arm%, $(UNAME_M)),)
     -include $(CFG_DIR)/platforms/arm.mk
 endif
+UNAME_P = $(shell uname -p)
+ifeq ($(UNAME_P), powerpc)
+    -include $(CFG_DIR)/platforms/powerpc.mk
+endif
 
 # Include all needed checks
 -include $(CFG_DIR)/checks/check_features.mk
