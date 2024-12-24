@@ -1192,6 +1192,7 @@ static struct key_sequence_codes {
     wchar_t *code;
     wint_t   key;
 } Keys[] = {
+
     { L"[1;5A", T_KEY_C_UP    },
     { L"[1;5B", T_KEY_C_DOWN  },
     { L"[1;5C", T_KEY_C_RIGHT },
@@ -1326,7 +1327,8 @@ void draw_active_window(Toxic *toxic)
             return;
         }
 
-        // if an unprintable key code is unrecognized by input handler we attempt to manually decode char sequence
+        // if an unprintable key code is unrecognized by input handler we attempt to
+        // manually decode char sequence
         wint_t tmp = get_input_sequence_code();
 
         if (tmp != (wint_t) -1) {
