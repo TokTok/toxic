@@ -356,14 +356,18 @@ fail:
    sample its state and update away status according to attached/detached state
    of the mplex.
  */
-static int mplex_is_detached(void)
+static bool mplex_is_detached(void)
 {
-    return gnu_screen_is_detached()  ||  tmux_is_detached();
+    return gnu_screen_is_detached() || tmux_is_detached();
 }
 
 static void mplex_timer_handler(Toxic *toxic)
 {
     if (toxic == NULL) {
+        return;
+    }
+
+    if (!toxic->c_config->mplex_away) {  // needed in case config is changed during a running session
         return;
     }
 
@@ -376,7 +380,7 @@ static void mplex_timer_handler(Toxic *toxic)
         return;
     }
 
-    int detached = mplex_is_detached();
+    const bool detached = mplex_is_detached();
 
     pthread_mutex_lock(&Winthread.lock);
     current_status = tox_self_get_status(toxic->tox);
@@ -391,7 +395,7 @@ static void mplex_timer_handler(Toxic *toxic)
         prev_status = current_status;
         new_status = TOX_USER_STATUS_AWAY;
         pthread_mutex_lock(&Winthread.lock);
-        size_t slen = tox_self_get_status_message_size(toxic->tox);
+        const size_t slen = tox_self_get_status_message_size(toxic->tox);
         tox_self_get_status_message(toxic->tox, (uint8_t *) prev_note);
         prev_note[slen] = '\0';
         pthread_mutex_unlock(&Winthread.lock);
@@ -414,7 +418,7 @@ static void mplex_timer_handler(Toxic *toxic)
 }
 
 /* Time in seconds between calls to mplex_timer_handler */
-#define MPLEX_TIMER_INTERVAL 5
+#define MPLEX_TIMER_INTERVAL 2
 
 _Noreturn static void *mplex_timer_thread(void *data)
 {
@@ -432,6 +436,14 @@ int init_mplex_away_timer(Toxic *toxic)
         return 0;
     }
 
+    if (toxic == NULL) {
+        return -1;
+    }
+
+    if (toxic->client_data.mplex_auto_away_initialized) {
+        return 0;
+    }
+
     if (!toxic->c_config->mplex_away) {
         return 0;
     }
@@ -444,6 +456,8 @@ int init_mplex_away_timer(Toxic *toxic)
     if (pthread_create(&mplex_tid, NULL, mplex_timer_thread, (void *)toxic) != 0) {
         return -1;
     }
+
+    toxic->client_data.mplex_auto_away_initialized = true;
 
     return 0;
 }

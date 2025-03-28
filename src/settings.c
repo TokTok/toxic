@@ -17,6 +17,7 @@
 #include "friendlist.h"
 #include "groupchats.h"
 #include "misc_tools.h"
+#include "term_mplex.h"
 #include "notify.h"
 #include "toxic.h"
 #include "windows.h"
@@ -1108,6 +1109,10 @@ void settings_reload(Toxic *toxic)
 
     if (ret < 0) {
         fprintf(stderr, "Failed to reload blocked words list (error %d)\n", ret);
+    }
+
+    if (init_mplex_away_timer(toxic) == -1) {
+        fprintf(stderr, "Failed to initialize mplex auto-away.\n");
     }
 
     endwin();
