@@ -21,6 +21,7 @@ void cmd_invite_to_group(WINDOW *window, ToxWindow *, Toxic *, int argc, char (*
 void cmd_game_join(WINDOW *, ToxWindow *, Toxic *, int argc, char (*argv)[MAX_STR_SIZE]);
 void cmd_savefile(WINDOW *, ToxWindow *, Toxic *, int argc, char (*argv)[MAX_STR_SIZE]);
 void cmd_sendfile(WINDOW *, ToxWindow *, Toxic *, int argc, char (*argv)[MAX_STR_SIZE]);
+void cmd_fopen(WINDOW *, ToxWindow *, Toxic *, int argc, char (*argv)[MAX_STR_SIZE]);
 
 #ifdef AUDIO
 void cmd_call(WINDOW *, ToxWindow *, Toxic *, int argc, char (*argv)[MAX_STR_SIZE]);
