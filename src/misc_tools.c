@@ -398,7 +398,7 @@ int get_file_name(char *namebuf, size_t bufsize, const char *pathname)
 
     if (basenm != NULL) {
         if (basenm[1]) {
-            strcpy(finalname, &basenm[1]);
+            snprintf(finalname, strlen(path) + 1, "%s", &basenm[1]);
         }
     }
 
@@ -488,7 +488,7 @@ int get_conference_nick_truncate(Tox *tox, char *buf, uint32_t peernum, uint32_t
     return len;
 
 on_error:
-    strcpy(buf, UNKNOWN_NAME);
+    snprintf(buf, TOXIC_MAX_NAME_LENGTH + 1, "%s", UNKNOWN_NAME);
     len = strlen(UNKNOWN_NAME);
     buf[len] = '\0';
 
@@ -502,13 +502,13 @@ size_t get_group_nick_truncate(Tox *tox, char *buf, uint32_t peer_id, uint32_t g
     size_t len = tox_group_peer_get_name_size(tox, groupnum, peer_id, &err);
 
     if (err != TOX_ERR_GROUP_PEER_QUERY_OK || len == 0) {
-        strcpy(buf, UNKNOWN_NAME);
+        snprintf(buf, TOXIC_MAX_NAME_LENGTH + 1, "%s", UNKNOWN_NAME);
         len = strlen(UNKNOWN_NAME);
     } else {
         tox_group_peer_get_name(tox, groupnum, peer_id, (uint8_t *) buf, &err);
 
         if (err != TOX_ERR_GROUP_PEER_QUERY_OK) {
-            strcpy(buf, UNKNOWN_NAME);
+            snprintf(buf, TOXIC_MAX_NAME_LENGTH + 1, "%s", UNKNOWN_NAME);
             len = strlen(UNKNOWN_NAME);
         }
     }
@@ -528,13 +528,13 @@ size_t get_group_self_nick_truncate(Tox *tox, char *buf, uint32_t groupnum)
     size_t len = tox_group_self_get_name_size(tox, groupnum, &err);
 
     if (err != TOX_ERR_GROUP_SELF_QUERY_OK) {
-        strcpy(buf, UNKNOWN_NAME);
+        snprintf(buf, TOXIC_MAX_NAME_LENGTH + 1, "%s", UNKNOWN_NAME);
         len = strlen(UNKNOWN_NAME);
     } else {
         tox_group_self_get_name(tox, groupnum, (uint8_t *) buf, &err);
 
         if (err != TOX_ERR_GROUP_SELF_QUERY_OK) {
-            strcpy(buf, UNKNOWN_NAME);
+            snprintf(buf, TOXIC_MAX_NAME_LENGTH + 1, "%s", UNKNOWN_NAME);
             len = strlen(UNKNOWN_NAME);
         }
     }
@@ -691,7 +691,7 @@ void set_window_title(ToxWindow *self, const char *title, int len)
     }
 
     if (len > MAX_WINDOW_NAME_LENGTH) {
-        strcpy(&cpy[MAX_WINDOW_NAME_LENGTH - 3], "...");
+        snprintf(&cpy[MAX_WINDOW_NAME_LENGTH - 3], 4, "...");
         cpy[MAX_WINDOW_NAME_LENGTH] = '\0';
     }
 

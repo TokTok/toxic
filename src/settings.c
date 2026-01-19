@@ -221,11 +221,11 @@ static const struct tox_strings {
 
 static void tox_defaults(Client_Config *settings)
 {
-    strcpy(settings->download_path, "");
-    strcpy(settings->chatlogs_path, "");
-    strcpy(settings->avatar_path, "");
-    strcpy(settings->autorun_path, "");
-    strcpy(settings->password_eval, "");
+    settings->download_path[0] = '\0';
+    settings->chatlogs_path[0] = '\0';
+    settings->avatar_path[0] = '\0';
+    settings->autorun_path[0] = '\0';
+    settings->password_eval[0] = '\0';
 }
 
 #ifdef AUDIO

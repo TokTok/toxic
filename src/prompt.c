@@ -338,18 +338,18 @@ static void draw_network_info(const Tox *tox, StatusBar *stb)
     const char *down_unit = "bytes";
 
     if (up_bytes > MiB) {
-        up /= (float)MiB;
+        up /= (double)MiB;
         up_unit = "MiB";
     } else if (up_bytes > KiB) {
-        up /= (float)KiB;
+        up /= (double)KiB;
         up_unit = "KiB";
     }
 
     if (down_bytes > MiB) {
-        down /= (float)MiB;
+        down /= (double)MiB;
         down_unit = "MiB";
     } else if (down_bytes > KiB) {
-        down /= (float)KiB;
+        down /= (double)KiB;
         down_unit = "KiB";
     }
 
@@ -359,24 +359,24 @@ static void draw_network_info(const Tox *tox, StatusBar *stb)
     const char *down_bps_unit = "b/s";
 
     if (up_bps > MiB) {
-        up_bps /= (float)MiB;
+        up_bps /= (double)MiB;
         up_bps_unit = "MiB/s";
     } else if (up_bps > KiB) {
-        up_bps /= (float)KiB;
+        up_bps /= (double)KiB;
         up_bps_unit = "KiB/s";
     }
 
     if (down_bps > MiB) {
-        down_bps /= (float)MiB;
+        down_bps /= (double)MiB;
         down_bps_unit = "MiB/s";
     } else if (down_bps > KiB) {
-        down_bps /= (float)KiB;
+        down_bps /= (double)KiB;
         down_bps_unit = "KiB/s";
     }
 
     snprintf(stb->network_info, sizeof(stb->network_info),
-             " | [Up: %.1f%s (%.1f%s) | Down: %.1f%s (%.1f%s)]", up, up_unit, up_bps, up_bps_unit,
-             down, down_unit, down_bps, down_bps_unit);
+             " | [Up: %.1f%s (%.1f%s) | Down: %.1f%s (%.1f%s)]", (double)up, up_unit, (double)up_bps, up_bps_unit,
+             (double)down, down_unit, (double)down_bps, down_bps_unit);
 }
 
 #endif // TOX_EXPERIMENTAL
