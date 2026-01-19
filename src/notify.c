@@ -752,7 +752,7 @@ int box_notify(ToxWindow *self, const Toxic *toxic, Notification notif, uint64_t
     }
 
     if (strlen(actives[id].messages[0]) > MAX_BOX_MSG_LEN - 3) {
-        strcpy(actives[id].messages[0] + MAX_BOX_MSG_LEN - 3, "...");
+        memcpy(actives[id].messages[0] + MAX_BOX_MSG_LEN - 3, "...", 4);
     }
 
     actives[id].box = notify_notification_new(actives[id].title, actives[id].messages[0], NULL);
@@ -803,7 +803,7 @@ int box_notify2(ToxWindow *self, const Toxic *toxic, Notification notif, uint64_
     }
 
     if (strlen(actives[id].messages[actives[id].size]) > MAX_BOX_MSG_LEN - 3) {
-        strcpy(actives[id].messages[actives[id].size] + MAX_BOX_MSG_LEN - 3, "...");
+        memcpy(actives[id].messages[actives[id].size] + MAX_BOX_MSG_LEN - 3, "...", 4);
     }
 
     actives[id].size++;
@@ -861,7 +861,7 @@ int box_silent_notify(ToxWindow *self, const Toxic *toxic, uint64_t flags, int *
     snprintf(actives[id].title, sizeof(actives[id].title), "%s", title);
 
     if (strlen(title) > 23) {
-        strcpy(actives[id].title + 20, "...");
+        memcpy(actives[id].title + 20, "...", 4);
     }
 
     if (c_config->show_notification_content) {
@@ -874,7 +874,7 @@ int box_silent_notify(ToxWindow *self, const Toxic *toxic, uint64_t flags, int *
     }
 
     if (strlen(actives[id].messages[0]) > MAX_BOX_MSG_LEN - 3) {
-        strcpy(actives[id].messages[0] + MAX_BOX_MSG_LEN - 3, "...");
+        memcpy(actives[id].messages[0] + MAX_BOX_MSG_LEN - 3, "...", 4);
     }
 
     actives[id].active = 1;
@@ -923,7 +923,7 @@ int box_silent_notify2(ToxWindow *self, const Toxic *toxic, uint64_t flags, int 
     }
 
     if (strlen(actives[id].messages[actives[id].size]) > MAX_BOX_MSG_LEN - 3) {
-        strcpy(actives[id].messages[actives[id].size] + MAX_BOX_MSG_LEN - 3, "...");
+        memcpy(actives[id].messages[actives[id].size] + MAX_BOX_MSG_LEN - 3, "...", 4);
     }
 
     actives[id].size ++;
