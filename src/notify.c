@@ -62,6 +62,7 @@ static_assert(sizeof(CONTENT_HIDDEN_MESSAGE) < MAX_BOX_MSG_LEN,
 static struct Control {
     time_t cooldown;
     time_t notif_timeout;
+    int device_cooldown;
 
 #if defined(SOUND_NOTIFY) || defined(BOX_NOTIFY)
     pthread_mutex_t poll_mutex[1];
@@ -159,6 +160,9 @@ static void control_unlock(void)
 }
 
 #ifdef SOUND_NOTIFY
+#define SLEEP_1_MS 1000L
+#define SLEEP_100_MS 100000L
+
 static bool is_playing(int source)
 {
     int ready;
@@ -166,9 +170,7 @@ static bool is_playing(int source)
     return ready == AL_PLAYING;
 }
 
-/* TODO maybe find better way to do this */
 /* cooldown is in seconds */
-#define DEVICE_COOLDOWN 5 /* TODO perhaps load this from config? */
 static bool device_opened = false;
 static time_t last_opened_update = 0;
 
@@ -246,7 +248,7 @@ static void graceful_clear(void)
             return;
         }
 
-        sleep_thread(1000L);
+        sleep_thread(SLEEP_1_MS);
     }
 
     control_unlock();
@@ -315,16 +317,16 @@ static void *do_playing(void *_p)
 #endif /* BOX_NOTIFY */
         }
 
-        /* device is opened and no activity in under DEVICE_COOLDOWN time, close device*/
+        /* device is opened and no activity in under device_cooldown time, close device*/
         if (device_opened && !has_looping &&
-                (time(NULL) - last_opened_update) > DEVICE_COOLDOWN) {
+                (time(NULL) - last_opened_update) > Control.device_cooldown) {
             m_close_device();
         }
 
         has_looping = false;
 
         control_unlock();
-        sleep_thread(100000L);
+        sleep_thread(SLEEP_100_MS);
     }
 
     pthread_exit(NULL);
@@ -351,6 +353,8 @@ static int play_source(uint32_t source, uint32_t buffer, bool looping)
 }
 
 #elif BOX_NOTIFY
+#define SLEEP_10_MS 10000L
+
 static void *do_playing(void *_p)
 {
     UNUSED_VAR(_p);
@@ -372,7 +376,7 @@ static void *do_playing(void *_p)
         }
 
         control_unlock();
-        sleep_thread(10000L);
+        sleep_thread(SLEEP_10_MS);
     }
 
     pthread_exit(NULL);
@@ -431,7 +435,7 @@ void kill_notifs(int id)
 
 
 /* Opens primary device */
-int init_notify(int login_cooldown, int notification_timeout)
+int init_notify(int login_cooldown, int notification_timeout, int device_cooldown)
 {
 #ifdef SOUND_NOTIFY
     alutInitWithoutContext(NULL, NULL);
@@ -460,6 +464,7 @@ int init_notify(int login_cooldown, int notification_timeout)
     notify_init("Toxic");
 #endif
     Control.notif_timeout = notification_timeout;
+    Control.device_cooldown = device_cooldown;
     return 1;
 }
 
