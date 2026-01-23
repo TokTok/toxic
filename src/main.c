@@ -1249,6 +1249,20 @@ static Toxic *toxic_init(void)
 
     toxic->windows = tmp_windows;
 
+#ifdef AUDIO
+    toxic->call_control = calloc(1, sizeof(struct CallControl));
+
+    if (toxic->call_control == NULL) {
+        free(toxic->c_config);
+        free(toxic->run_opts);
+        free(toxic->windows);
+        free(toxic->friends);
+        free(toxic->blocked);
+        free(toxic);
+        return NULL;
+    }
+#endif
+
     init_friendlist(toxic);
 
     toxic->paths = paths_init();
@@ -1259,10 +1273,12 @@ static Toxic *toxic_init(void)
         free(toxic->windows);
         free(toxic->friends);
         free(toxic->blocked);
+#ifdef AUDIO
+        free(toxic->call_control);
+#endif
         free(toxic);
         return NULL;
     }
-
     return toxic;
 }
 

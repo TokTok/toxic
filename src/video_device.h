@@ -34,7 +34,7 @@ typedef enum VideoDeviceError {
     vde_CaptureError = -9,
 } VideoDeviceError;
 
-typedef void (*VideoDataHandleCallback)(Toxic *toxic, int16_t width, int16_t height, const uint8_t *y, const uint8_t *u,
+typedef void (*VideoDataHandleCallback)(Toxic *toxic, uint32_t friend_number, int16_t width, int16_t height, const uint8_t *y, const uint8_t *u,
                                         const uint8_t *v, void *data);
 
 VideoDeviceError init_video_devices(Toxic *toxic);
