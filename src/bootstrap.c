@@ -29,7 +29,7 @@
 #include "windows.h"
 
 /* URL that we get the JSON encoded nodes list from. */
-#define NODES_LIST_URL "https://nodes.tox.chat/json"
+#define DEFAULT_NODES_LIST_URL "https://nodes.tox.chat/json"
 
 #define DEFAULT_NODES_FILENAME "DHTnodes.json"
 
@@ -206,7 +206,11 @@ static int curl_fetch_nodes_JSON(const Run_Options *run_opts, struct Recv_Curl_D
         goto on_exit;
     }
 
-    ret = curl_easy_setopt(c_handle, CURLOPT_URL, NODES_LIST_URL);
+    if (!string_is_empty(run_opts->nodes_list_url)) {
+        ret = curl_easy_setopt(c_handle, CURLOPT_URL, run_opts->nodes_list_url);
+    } else {
+        ret = curl_easy_setopt(c_handle, CURLOPT_URL, DEFAULT_NODES_LIST_URL);
+    }
 
     if (ret != CURLE_OK) {
         fprintf(stderr, "Failed to set url (libcurl error %d)", ret);
