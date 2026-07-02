@@ -861,6 +861,7 @@ static void print_usage(void)
     fprintf(stderr, "  -l, --logging            Enable toxcore logging: Requires [log_path | stderr]\n");
     fprintf(stderr, "  -L, --no-lan             Disable local discovery\n");
     fprintf(stderr, "  -n, --nodes              Use specified DHTnodes file\n");
+    fprintf(stderr, "  -N, --nodes-url          Use specified DHTnodes list url\n");
     fprintf(stderr, "  -o, --noconnect          Do not connect to the DHT network\n");
     fprintf(stderr, "  -p, --SOCKS5-proxy       Use SOCKS5 proxy: Requires [IP] [port]\n");
     fprintf(stderr, "  -P, --HTTP-proxy         Use HTTP proxy: Requires [IP] [port]\n");
@@ -994,6 +995,7 @@ static void parse_args(Toxic *toxic, Init_Queue *init_q, int argc, char *argv[])
         {"logging", required_argument, 0, 'l'},
         {"no-lan", no_argument, 0, 'L'},
         {"nodes", required_argument, 0, 'n'},
+        {"nodes-url", required_argument, 0, 'N'},
         {"help", no_argument, 0, 'h'},
         {"noconnect", no_argument, 0, 'o'},
         {"namelist", required_argument, 0, 'r'},
@@ -1010,9 +1012,9 @@ static void parse_args(Toxic *toxic, Init_Queue *init_q, int argc, char *argv[])
     };
 
 #ifdef TOX_EXPERIMENTAL
-    const char *opts_str = "4bdehLotuxvc:f:l:n:r:s:p:P:T:";
+    const char *opts_str = "4bdehLotuxvc:f:l:n:N:r:s:p:P:T:";
 #else
-    const char *opts_str = "4bdehLotuxvc:f:l:n:r:p:P:T:";
+    const char *opts_str = "4bdehLotuxvc:f:l:n:N:r:p:P:T:";
 #endif // TOX_EXPERIMENTAL
 
     int opt = 0;
@@ -1073,6 +1075,16 @@ static void parse_args(Toxic *toxic, Init_Queue *init_q, int argc, char *argv[])
                 }
 
                 snprintf(run_opts->nodes_path, sizeof(run_opts->nodes_path), "%s", optarg);
+                break;
+            }
+
+            case 'N': {
+                if (optarg == NULL ) {
+                    init_queue_add(init_q, "Invaild argument for option : %d", opt);
+                    break;
+                }
+
+                snprintf(run_opts->nodes_list_url, sizeof(run_opts->nodes_list_url), "%s", optarg);
                 break;
             }
 
