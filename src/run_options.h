@@ -45,6 +45,7 @@ typedef struct Run_Options {
     char nameserver_path[TOXIC_MAX_PATH_LENGTH];
     char config_path[TOXIC_MAX_PATH_LENGTH];
     char nodes_path[TOXIC_MAX_PATH_LENGTH];
+    char nodes_list_url[TOXIC_MAX_PATH_LENGTH];
 
     bool logging;
     FILE *log_fp;
