@@ -55,6 +55,14 @@ jobs:
           tar Jxf /tmp/artifact/toxic-minimal-static-musl_linux_x86-64.tar.xz
           sha256sum toxic-minimal-static-musl_linux_x86-64/toxic
 
+  filc:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+      - name: Build toxic with Fil-C
+        run: docker build -f script/filc.Dockerfile .
+
   infer:
     runs-on: ubuntu-latest
     container: toxchat/infer
