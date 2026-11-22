@@ -53,7 +53,7 @@ typedef struct {
     int side_pos;    /* current position of the sidebar - used for scrolling up and down */
     time_t start_time;
 
-    char id[TOX_CONFERENCE_UID_SIZE];
+    char id[TOX_CONFERENCE_ID_SIZE];
 
     char title[CONFERENCE_MAX_TITLE_LENGTH + 1];
     size_t title_length;
