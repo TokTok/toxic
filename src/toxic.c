@@ -189,120 +189,38 @@ void set_window_refresh_rate(size_t refresh_rate)
     timeout(refresh_rate);
 }
 
-static void get_custom_toxic_colours(const Client_Config *c_config, short *bar_bg_color, short *bar_fg_color,
-                                     short *bar_accent_color, short *bar_notify_color)
+static const struct Colour_Name {
+    const char *name;
+    short colour;
+} colour_names[] = {
+
+    {"black", COLOR_BLACK},
+    {"red", COLOR_RED},
+    {"blue", COLOR_BLUE},
+    {"cyan", COLOR_CYAN},
+    {"green", COLOR_GREEN},
+    {"yellow", COLOR_YELLOW},
+    {"magenta", COLOR_MAGENTA},
+    {"white", COLOR_WHITE},
+    {"gray", CUSTOM_COLOUR_GRAY},
+    {"orange", CUSTOM_COLOUR_ORANGE},
+    {"pink", CUSTOM_COLOUR_PINK},
+    {"brown", CUSTOM_COLOUR_BROWN},
+};
+
+/*
+ * Returns the colour called `name`, or else the one called `default_name`, so the defaults are
+ * only in settings.h. Returns -1 (the terminal's default colour) if neither is a colour.
+ */
+static short colour_by_name(const char *name, const char *default_name)
 {
-    if (!string_is_empty(c_config->color_bar_bg)) {
-        if (strcmp(c_config->color_bar_bg, "black") == 0) {
-            *bar_bg_color = COLOR_BLACK;
-        } else if (strcmp(c_config->color_bar_bg, "red") == 0) {
-            *bar_bg_color = COLOR_RED;
-        } else if (strcmp(c_config->color_bar_bg, "blue") == 0) {
-            *bar_bg_color = COLOR_BLUE;
-        } else if (strcmp(c_config->color_bar_bg, "cyan") == 0) {
-            *bar_bg_color = COLOR_CYAN;
-        } else if (strcmp(c_config->color_bar_bg, "green") == 0) {
-            *bar_bg_color = COLOR_GREEN;
-        } else if (strcmp(c_config->color_bar_bg, "yellow") == 0) {
-            *bar_bg_color = COLOR_YELLOW;
-        } else if (strcmp(c_config->color_bar_bg, "magenta") == 0) {
-            *bar_bg_color = COLOR_MAGENTA;
-        } else if (strcmp(c_config->color_bar_bg, "white") == 0) {
-            *bar_bg_color = COLOR_WHITE;
-        } else if (strcmp(c_config->color_bar_bg, "gray") == 0) {
-            *bar_bg_color = CUSTOM_COLOUR_GRAY;
-        } else if (strcmp(c_config->color_bar_bg, "orange") == 0) {
-            *bar_bg_color = CUSTOM_COLOUR_ORANGE;
-        } else if (strcmp(c_config->color_bar_bg, "pink") == 0) {
-            *bar_bg_color = CUSTOM_COLOUR_PINK;
-        } else if (strcmp(c_config->color_bar_bg, "brown") == 0) {
-            *bar_bg_color = CUSTOM_COLOUR_BROWN;
+    for (size_t i = 0; i < sizeof(colour_names) / sizeof(colour_names[0]); ++i) {
+        if (strcmp(colour_names[i].name, name) == 0) {
+            return colour_names[i].colour;
         }
     }
 
-    if (!string_is_empty(c_config->color_bar_fg)) {
-        if (strcmp(c_config->color_bar_fg, "black") == 0) {
-            *bar_fg_color = COLOR_BLACK;
-        } else if (strcmp(c_config->color_bar_fg, "red") == 0) {
-            *bar_fg_color = COLOR_RED;
-        } else if (strcmp(c_config->color_bar_fg, "blue") == 0) {
-            *bar_fg_color = COLOR_BLUE;
-        } else if (strcmp(c_config->color_bar_fg, "cyan") == 0) {
-            *bar_fg_color = COLOR_CYAN;
-        } else if (strcmp(c_config->color_bar_fg, "green") == 0) {
-            *bar_fg_color = COLOR_GREEN;
-        } else if (strcmp(c_config->color_bar_fg, "yellow") == 0) {
-            *bar_fg_color = COLOR_YELLOW;
-        } else if (strcmp(c_config->color_bar_fg, "magenta") == 0) {
-            *bar_fg_color = COLOR_MAGENTA;
-        } else if (strcmp(c_config->color_bar_fg, "white") == 0) {
-            *bar_fg_color = COLOR_WHITE;
-        } else if (strcmp(c_config->color_bar_fg, "gray") == 0) {
-            *bar_fg_color = CUSTOM_COLOUR_GRAY;
-        } else if (strcmp(c_config->color_bar_fg, "orange") == 0) {
-            *bar_fg_color = CUSTOM_COLOUR_ORANGE;
-        } else if (strcmp(c_config->color_bar_fg, "pink") == 0) {
-            *bar_fg_color = CUSTOM_COLOUR_PINK;
-        } else if (strcmp(c_config->color_bar_fg, "brown") == 0) {
-            *bar_fg_color = CUSTOM_COLOUR_BROWN;
-        }
-    }
-
-    if (!string_is_empty(c_config->color_bar_accent)) {
-        if (strcmp(c_config->color_bar_accent, "black") == 0) {
-            *bar_accent_color = COLOR_BLACK;
-        } else if (strcmp(c_config->color_bar_accent, "red") == 0) {
-            *bar_accent_color = COLOR_RED;
-        } else if (strcmp(c_config->color_bar_accent, "blue") == 0) {
-            *bar_accent_color = COLOR_BLUE;
-        } else if (strcmp(c_config->color_bar_accent, "cyan") == 0) {
-            *bar_accent_color = COLOR_CYAN;
-        } else if (strcmp(c_config->color_bar_accent, "green") == 0) {
-            *bar_accent_color = COLOR_GREEN;
-        } else if (strcmp(c_config->color_bar_accent, "yellow") == 0) {
-            *bar_accent_color = COLOR_YELLOW;
-        } else if (strcmp(c_config->color_bar_accent, "magenta") == 0) {
-            *bar_accent_color = COLOR_MAGENTA;
-        } else if (strcmp(c_config->color_bar_accent, "white") == 0) {
-            *bar_accent_color = COLOR_WHITE;
-        } else if (strcmp(c_config->color_bar_accent, "gray") == 0) {
-            *bar_accent_color = CUSTOM_COLOUR_GRAY;
-        } else if (strcmp(c_config->color_bar_accent, "orange") == 0) {
-            *bar_accent_color = CUSTOM_COLOUR_ORANGE;
-        } else if (strcmp(c_config->color_bar_accent, "pink") == 0) {
-            *bar_accent_color = CUSTOM_COLOUR_PINK;
-        } else if (strcmp(c_config->color_bar_accent, "brown") == 0) {
-            *bar_accent_color = CUSTOM_COLOUR_BROWN;
-        }
-    }
-
-    if (!string_is_empty(c_config->color_bar_notify)) {
-        if (strcmp(c_config->color_bar_notify, "black") == 0) {
-            *bar_notify_color = COLOR_BLACK;
-        } else if (strcmp(c_config->color_bar_notify, "red") == 0) {
-            *bar_notify_color = COLOR_RED;
-        } else if (strcmp(c_config->color_bar_notify, "blue") == 0) {
-            *bar_notify_color = COLOR_BLUE;
-        } else if (strcmp(c_config->color_bar_notify, "cyan") == 0) {
-            *bar_notify_color = COLOR_CYAN;
-        } else if (strcmp(c_config->color_bar_notify, "green") == 0) {
-            *bar_notify_color = COLOR_GREEN;
-        } else if (strcmp(c_config->color_bar_notify, "yellow") == 0) {
-            *bar_notify_color = COLOR_YELLOW;
-        } else if (strcmp(c_config->color_bar_notify, "magenta") == 0) {
-            *bar_notify_color = COLOR_MAGENTA;
-        } else if (strcmp(c_config->color_bar_notify, "white") == 0) {
-            *bar_notify_color = COLOR_WHITE;
-        } else if (strcmp(c_config->color_bar_notify, "gray") == 0) {
-            *bar_notify_color = CUSTOM_COLOUR_GRAY;
-        } else if (strcmp(c_config->color_bar_notify, "orange") == 0) {
-            *bar_notify_color = CUSTOM_COLOUR_ORANGE;
-        } else if (strcmp(c_config->color_bar_notify, "pink") == 0) {
-            *bar_notify_color = CUSTOM_COLOUR_PINK;
-        } else if (strcmp(c_config->color_bar_notify, "brown") == 0) {
-            *bar_notify_color = CUSTOM_COLOUR_BROWN;
-        }
-    }
+    return default_name != NULL ? colour_by_name(default_name, NULL) : -1;
 }
 
 void init_term(const Client_Config *c_config, Init_Queue *init_q, bool use_default_locale)
@@ -332,10 +250,10 @@ void init_term(const Client_Config *c_config, Init_Queue *init_q, bool use_defau
     }
 
     short bg_color = COLOR_BLACK;
-    short bar_bg_color = COLOR_BLUE;
-    short bar_fg_color = COLOR_WHITE;
-    short bar_accent_color = COLOR_CYAN;
-    short bar_notify_color = COLOR_YELLOW;
+    const short bar_bg_color = colour_by_name(c_config->color_bar_bg, COLOR_BAR_BG_DEFAULT);
+    const short bar_fg_color = colour_by_name(c_config->color_bar_fg, COLOR_BAR_FG_DEFAULT);
+    const short bar_accent_color = colour_by_name(c_config->color_bar_accent, COLOR_BAR_ACCENT_DEFAULT);
+    const short bar_notify_color = colour_by_name(c_config->color_bar_notify, COLOR_BAR_NOTIFY_DEFAULT);
 
     if (start_color() != 0) {
         init_queue_add(init_q, "Failed to initialize ncurses colors.");
@@ -347,8 +265,6 @@ void init_term(const Client_Config *c_config, Init_Queue *init_q, bool use_defau
             bg_color = -1;
         }
     }
-
-    get_custom_toxic_colours(c_config, &bar_bg_color, &bar_fg_color, &bar_accent_color, &bar_notify_color);
 
     init_pair(WHITE, COLOR_WHITE, COLOR_BLACK);
     init_pair(GREEN, COLOR_GREEN, bg_color);

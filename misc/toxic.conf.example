@@ -1,5 +1,6 @@
 // SAMPLE TOXIC CONFIGURATION
 // USES LIBCONFIG-ACCEPTED SYNTAX
+// Every value here is the one toxic uses when the setting is missing.
 
 ui = {
   // true to enable timestamps, false to disable
@@ -12,16 +13,16 @@ ui = {
   show_notification_content=true;
 
   // Output a bell when receiving a message (see manpage)
-  bell_on_message=true;
+  bell_on_message=false;
 
   // Output a bell when receiving a filetransfer (see manpage)
-  bell_on_filetrans=true;
+  bell_on_filetrans=false;
 
   // Don't output a bell when a filetransfer was accepted (see manpage)
   bell_on_filetrans_accept=false;
 
   // Output a bell when receiving a group/call invite (see manpage)
-  bell_on_invite=true;
+  bell_on_invite=false;
 
   // true to use native terminal colors, false to use toxic default color theme
   native_colors=false;
@@ -71,10 +72,10 @@ ui = {
   show_group_connection_msg=true;
 
   // true to show network information in the UI home window
-  show_network_info=true;
+  show_network_info=false;
 
   // How often in days to update the DHT nodes list. (0 to disable updates)
-  nodeslist_update_freq=7;
+  nodeslist_update_freq=1;
 
   // How often in seconds to auto-save the Tox data file. (0 to disable periodic auto-saves)
   autosave_freq=600;
@@ -114,12 +115,12 @@ ui = {
   mplex_away_note="Away from keyboard, be back soon!"
 
   // Parting message that will be sent to all groupchat peers when you leave the group
-  group_part_message="Toxic user signing out"
+  group_part_message=""
 };
 
 audio = {
   // preferred audio input device; numbers correspond to /lsdev in
-  input_device=2;
+  input_device=0;
 
   // preferred audio output device; numbers correspond to /lsdev out
   output_device=0;
@@ -149,6 +150,9 @@ tox = {
 
   // Path for chatlogs
   // chatlogs_path="/home/USERNAME/toxic_chatlogs/";
+
+  // Command that prints the password for an encrypted data file
+  // password_eval="gpg --decrypt /home/USERNAME/toxic_password.gpg";
 };
 
 // Friend-specific config settings. Public keys are used as friend identifiers
@@ -223,7 +227,7 @@ blocked_words = [
 
 // To disable a sound set the path to "silent"
 sounds = {
-  error="__DATADIR__/sounds/ToxicError.wav";
+  notif_error="__DATADIR__/sounds/ToxicError.wav";
   user_log_in="__DATADIR__/sounds/ToxicContactOnline.wav";
   user_log_out="__DATADIR__/sounds/ToxicContactOffline.wav";
   call_incoming="__DATADIR__/sounds/ToxicIncomingCall.wav";

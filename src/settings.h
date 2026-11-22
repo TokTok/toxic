@@ -17,6 +17,10 @@
 #include "run_options.h"
 #include "toxic_constants.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* Represents line_* hints max strlen */
 #define LINE_HINT_MAX 3
 
@@ -102,6 +106,10 @@ typedef struct Client_Config {
 #define LINE_ALERT   "-!-"
 #define LINE_NORMAL  "-"
 #define LINE_SPECIAL ">"
+#define COLOR_BAR_BG_DEFAULT     "blue"
+#define COLOR_BAR_FG_DEFAULT     "white"
+#define COLOR_BAR_ACCENT_DEFAULT "cyan"
+#define COLOR_BAR_NOTIFY_DEFAULT "yellow"
 #define TIMESTAMP_DEFAULT      "%H:%M"
 #define LOG_TIMESTAMP_DEFAULT  "%Y/%m/%d [%H:%M]"
 #define MPLEX_AWAY_NOTE "Away from keyboard, be back soon!"
@@ -187,5 +195,10 @@ int settings_load_blocked_words(Client_Data *client_data, const Run_Options *run
  * Reloads config settings.
  */
 void settings_reload(Toxic *toxic);
+
+#ifdef __cplusplus
+} /* extern "C" */
+
+#endif /* __cplusplus */
 
 #endif /* SETTINGS_H */

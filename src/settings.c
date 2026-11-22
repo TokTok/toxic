@@ -136,6 +136,10 @@ static void ui_defaults(Client_Config *settings)
     settings->alerts = true;
     settings->show_notification_content = true;
     settings->native_colors = false;
+    snprintf(settings->color_bar_bg, sizeof(settings->color_bar_bg), "%s", COLOR_BAR_BG_DEFAULT);
+    snprintf(settings->color_bar_fg, sizeof(settings->color_bar_fg), "%s", COLOR_BAR_FG_DEFAULT);
+    snprintf(settings->color_bar_accent, sizeof(settings->color_bar_accent), "%s", COLOR_BAR_ACCENT_DEFAULT);
+    snprintf(settings->color_bar_notify, sizeof(settings->color_bar_notify), "%s", COLOR_BAR_NOTIFY_DEFAULT);
     settings->bell_on_message = 0;
     settings->bell_on_filetrans = 0;
     settings->bell_on_filetrans_accept = 0;
