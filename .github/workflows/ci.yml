@@ -11,7 +11,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Install dependencies
         run:
           sudo apt-get update &&
@@ -43,7 +43,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Build minimal static toxic binary
         run: docker run --rm
           -v /tmp/artifact:/artifact
@@ -59,7 +59,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Build toxic with Fil-C
         run: docker build -f script/filc.Dockerfile .
 
@@ -100,7 +100,7 @@ jobs:
           cd _build &&
           make -j4 &&
           make install
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Run infer
         run:
@@ -138,6 +138,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Run integration tests
         run: test/run
