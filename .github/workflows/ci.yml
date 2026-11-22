@@ -36,6 +36,9 @@ jobs:
           make -j4 &&
           sudo make install
 
+      - name: Check toxic.conf.example
+        run: script/check-config-example.py
+
       - name: Build toxic
         run: USER_CFLAGS=-Werror make -j4 ENABLE_TOX_EXPERIMENTAL=1
 

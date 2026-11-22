@@ -112,6 +112,23 @@ cc_test(
 )
 
 cc_test(
+    name = "settings_test",
+    size = "small",
+    srcs = ["src/settings_test.cc"],
+    # Client_Config's fields depend on these.
+    copts = COPTS,
+    data = ["misc/toxic.conf.example"],
+    env = {"TOXIC_CONF_EXAMPLE": "$(rootpath misc/toxic.conf.example)"},
+    linkstatic = True,
+    tags = ["no-windows"],
+    deps = [
+        ":libtoxic",
+        "@com_google_googletest//:gtest",
+        "@com_google_googletest//:gtest_main",
+    ],
+)
+
+cc_test(
     name = "misc_tools_test",
     size = "small",
     srcs = ["src/misc_tools_test.cc"],
